@@ -36,17 +36,17 @@ public class VapForumApplicationTests {
 	
 	@Test
 	public void getUserWithIntegerId() {
-		assertTrue(userDao.getUserById(1) instanceof User);
+		assertTrue(userDao.findById(1L) instanceof User);
 	}
 	
 	@Test
 	public void getUserWithNickname() {
-		assertTrue(userDao.getUserByNickname("pipecm") instanceof User);
+		assertTrue(userDao.findByNickname("pipecm") instanceof User);
 	}
 	
 	@Test
 	public void getUserWithEmail() {
-		assertTrue(userDao.getUserByEmail("pipecm@gmail.com") instanceof User);
+		assertTrue(userDao.findByEmail("pipecm@gmail.com") instanceof User);
 	}
 	
 	@Test(expected = UserAlreadyExistsException.class)
@@ -89,9 +89,19 @@ public class VapForumApplicationTests {
 		
 	}
 	
+	@Test
+	public void updateUser() {
+		
+	}
+	
+	@Test
+	public void deleteUser() {
+		
+	}
+	
 	private static User getTestUser() {
 		User user = new User();
-		user.setId(1);
+		user.setId(1L);
 		user.setNickname("pipecm");
 		user.setEmail("pipecm@gmail.com");
 		user.setPassword("vanhack");
