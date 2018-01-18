@@ -8,5 +8,10 @@ public class UserDAO {
 	public List<User> getAllUsers() {
 		return null;
 	}
+
+	public void addUser(User user) {
+		
+		
+	}
 	
 }
