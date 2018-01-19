@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vanhack.forum.dao.UserDAO;
 import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserAlreadyExistsException;
+import com.vanhack.forum.exception.UserException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -49,12 +49,12 @@ public class VapForumApplicationTests {
 		assertTrue(userDao.findByEmail("pipecm@gmail.com") instanceof User);
 	}
 	
-	@Test(expected = UserAlreadyExistsException.class)
+	@Test(expected = UserException.class)
 	public void insertUserWithExistingId() {
 		userDao.addUser(getTestUser());
 	}
 	
-	@Test(expected = UserAlreadyExistsException.class)
+	@Test(expected = UserException.class)
 	public void insertUserWithExistingNickname() {
 		User user = new User();
 		user.setNickname("vanhack");
@@ -64,7 +64,7 @@ public class VapForumApplicationTests {
 		
 	}
 	
-	@Test(expected = UserAlreadyExistsException.class)
+	@Test(expected = UserException.class)
 	public void insertUserWithExistingEmail() {
 		
 	}
