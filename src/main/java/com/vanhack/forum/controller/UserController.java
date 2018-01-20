@@ -1,5 +1,8 @@
 package com.vanhack.forum.controller;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +27,7 @@ public class UserController {
 	}
 	
 	public int addUser(User user) throws UserException {
-		if(user.getNickname() == null || user.getNickname().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_NICKNAME_CODE, userErrorCodes.USER_EMPTY_NICKNAME_MESSAGE);
-		} else if(user.getEmail() == null || user.getEmail().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_EMAIL_CODE, userErrorCodes.USER_EMPTY_EMAIL_MESSAGE);
-		} else if(userDao.findByNickname(user.getNickname()) != null) {
-			throw new UserException(userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
-		} else if (userDao.findByEmail(user.getEmail()) != null) {
-			throw new UserException(userErrorCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userErrorCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
-		} else {
+		if(validateUser(user)) {
 			try {
 				return userDao.addUser(user);
 			} catch(Exception e) {
@@ -41,6 +36,7 @@ public class UserController {
 				throw ue;
 			}
 		}
+		return 1;
 	}
 	
 	public Iterable<User> getAllUsers() {
@@ -60,16 +56,7 @@ public class UserController {
 	}
 
 	public int updateUser(User user) throws UserException {
-		if(user.getNickname() == null || user.getNickname().equals("")) {
-			log.info("Code " + userErrorCodes.USER_EMPTY_NICKNAME_CODE + ": " + userErrorCodes.USER_EMPTY_NICKNAME_MESSAGE);
-			throw new UserException(userErrorCodes.USER_EMPTY_NICKNAME_CODE, userErrorCodes.USER_EMPTY_NICKNAME_MESSAGE);
-		} else if(user.getEmail() == null || user.getEmail().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_EMAIL_CODE, userErrorCodes.USER_EMPTY_EMAIL_MESSAGE);
-		} else if(!userDao.isNicknameAvailable(user)) {
-			throw new UserException(userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
-		} else if (!userDao.isEmailAvailable(user)) {
-			throw new UserException(userErrorCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userErrorCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
-		} else {
+		if(validateUser(user)) {
 			try {
 				return userDao.updateUser(user);
 			} catch(Exception e) {
@@ -78,10 +65,39 @@ public class UserController {
 				throw ue;
 			}
 		}
+		return 1;
 	}
 	
 	public int deleteUser(Long id) throws UserException {
 		return userDao.deleteUser(id);
+	}
+	
+	private boolean validateUser(User user) throws UserException {
+		if(user.getNickname() == null || user.getNickname().equals("")) {
+			throw new UserException(userErrorCodes.USER_EMPTY_NICKNAME_CODE, userErrorCodes.USER_EMPTY_NICKNAME_MESSAGE);
+		} else if(user.getEmail() == null || user.getEmail().equals("")) {
+			throw new UserException(userErrorCodes.USER_EMPTY_EMAIL_CODE, userErrorCodes.USER_EMPTY_EMAIL_MESSAGE);
+		} else if(user.getPassword() == null || user.getPassword().equals("")) {
+			throw new UserException(userErrorCodes.USER_EMPTY_PASSWORD_CODE, userErrorCodes.USER_EMPTY_PASSWORD_MESSAGE);
+		} else if(!validateEmail(user.getEmail())) {
+			throw new UserException(userErrorCodes.USER_INVALID_EMAIL_CODE, userErrorCodes.USER_INVALID_EMAIL_MESSAGE);
+		} else if(userDao.findByNickname(user.getNickname()) != null) {
+			throw new UserException(userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
+		} else if (userDao.findByEmail(user.getEmail()) != null) {
+			throw new UserException(userErrorCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userErrorCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
+		}
+		return true;
+	}
+	
+	private boolean validateEmail(String email) {
+		boolean validEmail = true;
+		try {
+			InternetAddress address = new InternetAddress(email);
+			address.validate();
+		} catch (AddressException e) {
+			validEmail = false;
+		}
+		return validEmail;
 	}
 
 }

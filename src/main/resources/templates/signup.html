@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>Sign Up</title>
+	</head>
+	<body>
+		<h1>VanHack Accelerator Program Forum - Sign Up</h1>
+        <form action="#" th:action="@{/signup}" th:object="${user}" method="post">
+            <table>
+                <tr>
+                    <td>Nickname:</td>
+                    <td><input type="text" th:field="*{nickname}" /></td>
+                    <td th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">Nickname Error</td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><input type="text" th:field="*{email}" /></td>
+                    <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td><input type="password" th:field="*{password}" /></td>
+                    <td th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</td>
+                </tr>
+                <tr>
+                    <td><button type="submit">Submit</button></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>
