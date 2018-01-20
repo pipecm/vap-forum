@@ -1,16 +1,19 @@
 package com.vanhack.forum.dao;
 
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserAlreadyExistsException;
 import com.vanhack.forum.exception.UserException;
 import com.vanhack.forum.repo.UserRepository;
-import com.vanhack.forum.util.Messages;
 
 @Repository
 public class UserDAO {
+	
+	private static final Logger log = LogManager.getLogger(UserDAO.class);
 	
 	private UserRepository repo;
 	
@@ -23,12 +26,8 @@ public class UserDAO {
 		return repo.findAll();
 	}
 
-	public int addUser(User user) throws UserException {
-		try {
-			repo.save(user);
-		} catch(Exception e) {
-			throw new UserException(1, e.getMessage());
-		}
+	public int addUser(User user) throws Exception {
+		repo.save(user);
 		return 0;
 	}
 	
@@ -54,19 +53,43 @@ public class UserDAO {
 		return user;
 	}
 	
-	public void updateUser(User user) throws UserAlreadyExistsException {
-		if(this.findByNickname(user.getNickname()) != null) {
-			throw new UserAlreadyExistsException(Messages.USER_NICKNAME_ALREADY_EXISTS);
-		} else if (this.findByEmail(user.getEmail()) != null) {
-			throw new UserAlreadyExistsException(Messages.USER_EMAIL_ALREADY_EXISTS);
-		} else {
+	public int updateUser(User user) throws UserException {
+		try {
 			repo.save(user);
-		}	
+		} catch(Exception e) {
+			log.error(e.getMessage(), e);
+			throw new UserException(1, e.getMessage());
+		}
+		return 0;
 	}
 	
-	public void deleteUser(Long id) {
-		User user = repo.findOne(id);
-		repo.delete(user);
+	public int deleteUser(Long id) throws UserException {
+		try {
+			User user = repo.findOne(id);
+			repo.delete(user);
+		} catch(Exception e) {
+			log.error(e.getMessage(), e);
+			throw new UserException(1, e.getMessage());
+		}
+		return 0;
+	}
+	
+	public boolean isNicknameAvailable(User user) {
+		List<User> list = repo.checkNickname(user.getId(), user.getNickname());
+		if(list.isEmpty() || list == null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isEmailAvailable(User user) {
+		List<User> list = repo.checkEmail(user.getId(), user.getEmail());
+		if(list.isEmpty() || list == null) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 }

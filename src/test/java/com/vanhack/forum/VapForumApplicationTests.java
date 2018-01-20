@@ -1,111 +1,145 @@
 package com.vanhack.forum;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vanhack.forum.dao.UserDAO;
+import com.vanhack.forum.controller.UserController;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.UserException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class VapForumApplicationTests {
 	
-	private UserDAO userDao;
+	@Autowired
+	private UserController userController;
 	
-	private static final Logger log = Logger.getLogger(VapForumApplicationTests.class);
-
-	@Test
-	public void contextLoads() {
-		
-	}
+	private static final Logger log = LogManager.getLogger(VapForumApplicationTests.class);
 
 	/* User tests */
 	
 	@Test
-	public void getListOfAllUsers() {
-		assertTrue(userDao.getAllUsers() instanceof List<?>);
+	public void a_insertTestUser() {
+		try {
+			User user = getTestUser();
+			assertTrue(userController.addUser(user) == 0);
+		} catch(UserException e) {
+			log.error(e.getMessage(),e);
+		}
 	}
 	
 	@Test
-	public void getUserWithIntegerId() {
-		assertTrue(userDao.findById(1L) instanceof User);
+	public void b_getListOfAllUsers() {
+		Iterable<User> list = userController.getAllUsers();
+		assertTrue(list instanceof Iterable<?> || list == null);
 	}
 	
 	@Test
-	public void getUserWithNickname() {
-		assertTrue(userDao.findByNickname("pipecm") instanceof User);
+	public void c_getUserWithIntegerId() {
+		assertTrue(userController.findById(1L) instanceof User);
 	}
 	
 	@Test
-	public void getUserWithEmail() {
-		assertTrue(userDao.findByEmail("pipecm@gmail.com") instanceof User);
+	public void d_getUserWithNickname() {
+		assertTrue(userController.findByNickname("vanhack") != null);
+	}
+	
+	@Test
+	public void e_userNotFoundWithNickname() {
+		assertTrue(userController.findByNickname("pipecm") == null);
+	}
+	
+	@Test
+	public void f_getUserWithEmail() {
+		assertTrue(userController.findByEmail("vanhack@vanhack.com") != null);
+	}
+	
+	@Test
+	public void g_userNotFoundWithEmail() {
+		assertTrue(userController.findByEmail("pipecm@gmail.com") == null);
 	}
 	
 	@Test(expected = UserException.class)
-	public void insertUserWithExistingId() {
-		userDao.addUser(getTestUser());
-	}
-	
-	@Test(expected = UserException.class)
-	public void insertUserWithExistingNickname() {
-		User user = new User();
+	public void h_insertUserWithExistingNickname() throws UserException {
+		User user = getTestUser();
 		user.setNickname("vanhack");
-		user.setPassword("vanhack");
-		user.setEmail("vanhack@vanhack.com");
-		userDao.addUser(user);
-		
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
-	public void insertUserWithExistingEmail() {
-		
+	public void i_insertUserWithExistingEmail() throws UserException {
+		User user = getTestUser();
+		user.setEmail("vanhack@vanhack.com");
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void insertUserWithNullNickname() {
-		
+	@Test(expected = UserException.class)
+	public void j_insertUserWithEmptyNickname() throws UserException {
+		User user = getTestUser();
+		user.setNickname("");
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void insertUserWithNullEmail() {
-		
+	@Test(expected = UserException.class)
+	public void k_insertUserWithEmptyEmail() throws UserException {
+		User user = getTestUser();
+		user.setEmail("");
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void insertUserWithInvalidEmail() {
-		
+	@Test(expected = UserException.class)
+	public void l_insertUserWithEmptyPassword() throws UserException {
+		User user = getTestUser();
+		user.setPassword("");
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void insertUserWithNicknameLongerThanAllowed() {
-		
+	@Test(expected = UserException.class)
+	public void m_insertUserWithInvalidEmail() throws UserException {
+		User user = getTestUser();
+		user.setNickname("test");
+		user.setEmail("vanhack.vanhack.com");
+		assertFalse(userController.addUser(user) == 0);
 	}
 	
 	@Test
-	public void updateUser() {
-		
+	public void n_updateUser() {
+		try {
+			User user = userController.findByNickname("vanhack");
+			user.setNickname("felipe");
+			assertTrue(userController.updateUser(user) == 0);
+		} catch(UserException e) {
+			log.error(e.getMessage(), e);
+		}	
 	}
 	
 	@Test
-	public void deleteUser() {
-		
+	public void o_deleteUser() {
+		try {
+			User user = userController.findByNickname("felipe");
+			assertTrue(userController.deleteUser(user.getId()) == 0);
+		} catch(UserException e) {
+			log.error(e.getMessage(), e);
+		}	
 	}
 	
 	private static User getTestUser() {
 		User user = new User();
-		user.setId(1L);
-		user.setNickname("pipecm");
-		user.setEmail("pipecm@gmail.com");
+		user.setNickname("vanhack");
 		user.setPassword("vanhack");
+		user.setEmail("vanhack@vanhack.com");
 		return user;
-	}
+	} 
 	
 }

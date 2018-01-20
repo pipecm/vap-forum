@@ -5,6 +5,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.Email;
 
 @Entity
 @Table(name = "vap_forum_user")
@@ -14,8 +17,10 @@ public class User {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 	
+	@Size(min = 4, max = 20)
 	private String nickname;
 	
+	@Email
 	private String email;
 	
 	private String password;
