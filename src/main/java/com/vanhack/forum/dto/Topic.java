@@ -3,14 +3,13 @@ package com.vanhack.forum.dto;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.MapsId;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -30,11 +29,11 @@ public class Topic {
 	private String title;
 	
 	@OneToOne(fetch = FetchType.LAZY)
-    @MapsId("userid")
+	@JoinColumn(name = "created_by")
 	private User createdBy;
 	
 	@OneToOne(fetch = FetchType.LAZY)
-    @MapsId("categoryid")
+	@JoinColumn(name = "category_id")
 	private Category category;
 	
 	private Date creationDate;
@@ -42,8 +41,8 @@ public class Topic {
 	private Date lastUpdate;
 	
 	@OneToMany(
-        mappedBy = "vap_forum_topic", 
-        cascade = CascadeType.ALL, 
+        mappedBy = "topic", 
+        cascade = CascadeType.REMOVE, 
         orphanRemoval = true
     )
 	private List<Post> posts = new ArrayList<>();

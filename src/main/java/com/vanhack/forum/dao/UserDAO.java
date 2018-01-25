@@ -1,7 +1,5 @@
 package com.vanhack.forum.dao;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,21 +34,11 @@ public class UserDAO {
 	}
 	
 	public User findByNickname(String nickname) {
-		User user = null;
-		List<User> list = repo.findByNickname(nickname);
-		for(User userByNickname : list) {
-			user = userByNickname;
-		}
-		return user;
+		return repo.findByNickname(nickname);
 	}
 	
 	public User findByEmail(String email) {
-		User user = null;
-		List<User> list = repo.findByEmail(email);
-		for(User userByEmail : list) {
-			user = userByEmail;
-		}
-		return user;
+		return repo.findByEmail(email);
 	}
 	
 	public int updateUser(User user) throws UserException {
@@ -74,9 +62,8 @@ public class UserDAO {
 		return 0;
 	}
 	
-	public boolean isNicknameAvailable(User user) {
-		List<User> list = repo.checkNickname(user.getId(), user.getNickname());
-		if(list.isEmpty() || list == null) {
+	public boolean isNicknameAvailable(User user) {;
+		if(repo.checkNickname(user.getId(), user.getNickname()) == null) {
 			return true;
 		} else {
 			return false;
@@ -84,8 +71,7 @@ public class UserDAO {
 	}
 	
 	public boolean isEmailAvailable(User user) {
-		List<User> list = repo.checkEmail(user.getId(), user.getEmail());
-		if(list.isEmpty() || list == null) {
+		if(repo.checkEmail(user.getId(), user.getEmail()) == null) {
 			return true;
 		} else {
 			return false;

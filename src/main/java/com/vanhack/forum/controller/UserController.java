@@ -6,6 +6,7 @@ import javax.mail.internet.InternetAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import com.vanhack.forum.dao.UserDAO;
 import com.vanhack.forum.dto.User;
@@ -19,16 +20,19 @@ public class UserController {
 	
 	private UserDAO userDao;
 	private UserErrorCodes userErrorCodes;
+	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Autowired
-	public UserController(UserDAO userDao, UserErrorCodes userErrorCodes) {
+	public UserController(UserDAO userDao, UserErrorCodes userErrorCodes, BCryptPasswordEncoder passwordEncoder) {
 		this.userDao = userDao;
 		this.userErrorCodes = userErrorCodes;
+		this.passwordEncoder = passwordEncoder;
 	}
 	
 	public int addUser(User user) throws UserException {
 		if(validateUser(user)) {
 			try {
+				user.setPassword(passwordEncoder.encode(user.getPassword()));
 				return userDao.addUser(user);
 			} catch(Exception e) {
 				UserException ue = new UserException(userErrorCodes.USER_UNEXPECTED_ERROR_CODE, userErrorCodes.USER_UNEXPECTED_ERROR_MESSAGE);
