@@ -6,18 +6,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.vanhack.forum.controller.CategoryController;
 import com.vanhack.forum.dto.Category;
+import com.vanhack.forum.service.CategoryService;
 
 @Controller  
 @RequestMapping(path="/api/categories") 
 public class CategoryRest {
 	
 	@Autowired            
-	private CategoryController categoryController;
+	private CategoryService categoryService;
 
 	@GetMapping(path="/allCategories")
 	public @ResponseBody Iterable<Category> getAllCategories() {
-		return categoryController.getAllCategories();
+		return categoryService.getAllCategories();
 	}
 }

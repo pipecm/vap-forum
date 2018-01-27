@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vanhack.forum.controller.UserController;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.service.UserService;
 
 @RestController  
 @RequestMapping("/api/users") 
@@ -26,7 +27,7 @@ public class UserRestController {
 	private static final Logger log = LogManager.getLogger(UserRestController.class);
 
 	@Autowired            
-	private UserController userController;
+	private UserService userService;
 	
 	/*
 	@PostMapping(path="/addUser") 
@@ -39,9 +40,9 @@ public class UserRestController {
 	public @ResponseBody AddUserResponse addUser(@Valid @RequestBody AddUserRequest request) {
 		AddUserResponse response = new AddUserResponse();
 		try {
-			response.setResponseCode(userController.addUser(request.getNewUser()));
+			response.setResponseCode(userService.addUser(request.getNewUser()));
 			response.setResponseMessage("OK");
-			response.setNewUser(userController.findByNickname(request.getNewUser().getNickname()));
+			response.setNewUser(userService.findByNickname(request.getNewUser().getNickname()));
 		} catch(UserException e) {
 			log.error(e.getMessage(), e);
 			response.setResponseCode(e.getCode());
@@ -58,7 +59,7 @@ public class UserRestController {
 	
 	@PostMapping(path="/allUsers")
 	public @ResponseBody GetAllUsersResponse getAllUsers(@RequestBody GetAllUsersRequest request) {
-		Iterable<User> usersList = userController.getAllUsers();
+		Iterable<User> usersList = userService.getAllUsers();
 		GetAllUsersResponse response = new GetAllUsersResponse();
 		response.setResponseCode(0);
 		response.setResponseMessage("OK");

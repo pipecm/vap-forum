@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vanhack.forum.controller.UserController;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.service.UserService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -23,7 +24,7 @@ import com.vanhack.forum.exception.UserException;
 public class VapForumApplicationTests {
 	
 	@Autowired
-	private UserController userController;
+	private UserService userService;
 	
 	private static final Logger log = LogManager.getLogger(VapForumApplicationTests.class);
 
@@ -33,7 +34,7 @@ public class VapForumApplicationTests {
 	public void a_insertTestUser() {
 		try {
 			User user = getTestUser();
-			assertTrue(userController.addUser(user) == 0);
+			assertTrue(userService.addUser(user) == 0);
 		} catch(UserException e) {
 			log.error(e.getMessage(),e);
 		}
@@ -41,68 +42,68 @@ public class VapForumApplicationTests {
 	
 	@Test
 	public void b_getListOfAllUsers() {
-		Iterable<User> list = userController.getAllUsers();
+		Iterable<User> list = userService.getAllUsers();
 		assertTrue(list instanceof Iterable<?> || list == null);
 	}
 	
 	@Test
 	public void c_getUserWithIntegerId() {
-		assertTrue(userController.findById(1L) instanceof User);
+		assertTrue(userService.findById(1L) instanceof User);
 	}
 	
 	@Test
 	public void d_getUserWithNickname() {
-		assertTrue(userController.findByNickname("vanhack") != null);
+		assertTrue(userService.findByNickname("vanhack") != null);
 	}
 	
 	@Test
 	public void e_userNotFoundWithNickname() {
-		assertTrue(userController.findByNickname("pipecm") == null);
+		assertTrue(userService.findByNickname("pipecm") == null);
 	}
 	
 	@Test
 	public void f_getUserWithEmail() {
-		assertTrue(userController.findByEmail("vanhack@vanhack.com") != null);
+		assertTrue(userService.findByEmail("vanhack@vanhack.com") != null);
 	}
 	
 	@Test
 	public void g_userNotFoundWithEmail() {
-		assertTrue(userController.findByEmail("pipecm@gmail.com") == null);
+		assertTrue(userService.findByEmail("pipecm@gmail.com") == null);
 	}
 	
 	@Test(expected = UserException.class)
 	public void h_insertUserWithExistingNickname() throws UserException {
 		User user = getTestUser();
 		user.setNickname("vanhack");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
 	public void i_insertUserWithExistingEmail() throws UserException {
 		User user = getTestUser();
 		user.setEmail("vanhack@vanhack.com");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
 	public void j_insertUserWithEmptyNickname() throws UserException {
 		User user = getTestUser();
 		user.setNickname("");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
 	public void k_insertUserWithEmptyEmail() throws UserException {
 		User user = getTestUser();
 		user.setEmail("");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
 	public void l_insertUserWithEmptyPassword() throws UserException {
 		User user = getTestUser();
 		user.setPassword("");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test(expected = UserException.class)
@@ -110,15 +111,15 @@ public class VapForumApplicationTests {
 		User user = getTestUser();
 		user.setNickname("test");
 		user.setEmail("vanhack.vanhack.com");
-		assertFalse(userController.addUser(user) == 0);
+		assertFalse(userService.addUser(user) == 0);
 	}
 	
 	@Test
 	public void n_updateUser() {
 		try {
-			User user = userController.findByNickname("vanhack");
+			User user = userService.findByNickname("vanhack");
 			user.setNickname("felipe");
-			assertTrue(userController.updateUser(user) == 0);
+			assertTrue(userService.updateUser(user) == 0);
 		} catch(UserException e) {
 			log.error(e.getMessage(), e);
 		}	
@@ -127,8 +128,8 @@ public class VapForumApplicationTests {
 	@Test
 	public void o_deleteUser() {
 		try {
-			User user = userController.findByNickname("felipe");
-			assertTrue(userController.deleteUser(user.getId()) == 0);
+			User user = userService.findByNickname("felipe");
+			assertTrue(userService.deleteUser(user.getId()) == 0);
 		} catch(UserException e) {
 			log.error(e.getMessage(), e);
 		}	

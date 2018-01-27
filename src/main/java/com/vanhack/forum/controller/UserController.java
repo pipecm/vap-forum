@@ -1,107 +1,53 @@
 package com.vanhack.forum.controller;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Controller;
-import com.vanhack.forum.dao.UserDAO;
-import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserException;
-import com.vanhack.forum.util.UserErrorCodes;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import com.vanhack.forum.dto.User;
+import com.vanhack.forum.service.UserService;
+
+@RestController
+@RequestMapping("/api")
 public class UserController {
 	
 	private static final Logger log = LogManager.getLogger(UserController.class);
 	
-	private UserDAO userDao;
-	private UserErrorCodes userErrorCodes;
-	private BCryptPasswordEncoder passwordEncoder;
-	
 	@Autowired
-	public UserController(UserDAO userDao, UserErrorCodes userErrorCodes, BCryptPasswordEncoder passwordEncoder) {
-		this.userDao = userDao;
-		this.userErrorCodes = userErrorCodes;
-		this.passwordEncoder = passwordEncoder;
-	}
+	private UserService userService;
 	
-	public int addUser(User user) throws UserException {
-		if(validateUser(user)) {
-			try {
-				user.setPassword(passwordEncoder.encode(user.getPassword()));
-				return userDao.addUser(user);
-			} catch(Exception e) {
-				UserException ue = new UserException(userErrorCodes.USER_UNEXPECTED_ERROR_CODE, userErrorCodes.USER_UNEXPECTED_ERROR_MESSAGE);
-				ue.initCause(e);
-				throw ue;
-			}
+	@GetMapping(path = "/user")
+	public ResponseEntity<List<User>> listAllUsers() {
+		log.info("Fetching all users");
+		List<User> users = userService.getAllUsers();
+		if(users.isEmpty()) {
+			log.info("No users found");
+			return new ResponseEntity<List<User>>(HttpStatus.NO_CONTENT); 
 		}
-		return 1;
-	}
-	
-	public Iterable<User> getAllUsers() {
-		return userDao.getAllUsers();
+		log.info(users.size() + " users found");
+		return new ResponseEntity<List<User>>(users, HttpStatus.OK);
 	}
 
-	public User findById(Long id) {
-		return userDao.findById(id);
-	}
-
-	public User findByNickname(String nickname) {
-		return userDao.findByNickname(nickname);
-	}
-
-	public User findByEmail(String email) {
-		return userDao.findByEmail(email);
-	}
-
-	public int updateUser(User user) throws UserException {
-		if(validateUser(user)) {
-			try {
-				return userDao.updateUser(user);
-			} catch(Exception e) {
-				UserException ue = new UserException(userErrorCodes.USER_UNEXPECTED_ERROR_CODE, userErrorCodes.USER_UNEXPECTED_ERROR_MESSAGE);
-				ue.initCause(e);
-				throw ue;
-			}
+	@GetMapping(path = "/user/{id}")
+	public ResponseEntity<?> getUser(@PathVariable("id") Long id) {
+		log.info("Fetching User with id {}", id);
+		User user = userService.findById(id);
+		if(user == null) {
+			log.error("User with id {} not found", id);
+			return new ResponseEntity<String>("User with id " + id 
+                    + " not found", HttpStatus.NOT_FOUND);	
 		}
-		return 1;
+		log.info("User found: " + user.toString());
+		return new ResponseEntity<User>(user, HttpStatus.OK);
 	}
 	
-	public int deleteUser(Long id) throws UserException {
-		return userDao.deleteUser(id);
-	}
 	
-	private boolean validateUser(User user) throws UserException {
-		if(user.getNickname() == null || user.getNickname().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_NICKNAME_CODE, userErrorCodes.USER_EMPTY_NICKNAME_MESSAGE);
-		} else if(user.getEmail() == null || user.getEmail().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_EMAIL_CODE, userErrorCodes.USER_EMPTY_EMAIL_MESSAGE);
-		} else if(user.getPassword() == null || user.getPassword().equals("")) {
-			throw new UserException(userErrorCodes.USER_EMPTY_PASSWORD_CODE, userErrorCodes.USER_EMPTY_PASSWORD_MESSAGE);
-		} else if(!validateEmail(user.getEmail())) {
-			throw new UserException(userErrorCodes.USER_INVALID_EMAIL_CODE, userErrorCodes.USER_INVALID_EMAIL_MESSAGE);
-		} else if(userDao.findByNickname(user.getNickname()) != null) {
-			throw new UserException(userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userErrorCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
-		} else if (userDao.findByEmail(user.getEmail()) != null) {
-			throw new UserException(userErrorCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userErrorCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
-		}
-		return true;
-	}
-	
-	private boolean validateEmail(String email) {
-		boolean validEmail = true;
-		try {
-			InternetAddress address = new InternetAddress(email);
-			address.validate();
-		} catch (AddressException e) {
-			validEmail = false;
-		}
-		return validEmail;
-	}
-
 }

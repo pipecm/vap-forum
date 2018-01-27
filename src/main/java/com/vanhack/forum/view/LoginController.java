@@ -1,6 +1,7 @@
 package com.vanhack.forum.view;
 
 import javax.validation.Valid;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
-import com.vanhack.forum.controller.UserController;
+
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.service.UserService;
 
 @Controller
 public class LoginController {
@@ -21,7 +23,7 @@ public class LoginController {
 	private static final Logger log = LogManager.getLogger(LoginController.class);
 
 	@Autowired
-	private UserController userController;
+	private UserService userService;
 	
 	@RequestMapping(value={"/", "/login"}, method = RequestMethod.GET)
 	public ModelAndView login(){
@@ -42,7 +44,7 @@ public class LoginController {
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
 	public ModelAndView createNewUser(@Valid User user, BindingResult bindingResult) {
 		ModelAndView modelAndView = new ModelAndView();
-		User userExists = userController.findByEmail(user.getEmail());
+		User userExists = userService.findByEmail(user.getEmail());
 		if (userExists != null) {
 			bindingResult
 					.rejectValue("email", "error.user",
@@ -52,7 +54,7 @@ public class LoginController {
 			modelAndView.setViewName("signup");
 		} else {
 			try {
-				userController.addUser(user);
+				userService.addUser(user);
 				modelAndView.addObject("successMessage", "User has been registered successfully");
 				modelAndView.addObject("user", new User());
 				modelAndView.setViewName("signup");
@@ -68,7 +70,7 @@ public class LoginController {
 	public ModelAndView home(){
 		ModelAndView modelAndView = new ModelAndView();
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = userController.findByEmail(auth.getName());
+		User user = userService.findByEmail(auth.getName());
 		modelAndView.addObject("userName", "Welcome " + user.getNickname() + " " + " (" + user.getEmail() + ")");
 		modelAndView.setViewName("home");
 		return modelAndView;

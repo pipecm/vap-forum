@@ -2,9 +2,13 @@ package com.vanhack.forum.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import com.vanhack.forum.dto.User;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+	
+	public User findById(Long id);
 	
 	public User findByNickname(String nickname);
 	

@@ -6,8 +6,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource("classpath:user.properties")
-public class UserErrorCodes {
-
+public class UserCodes {
+	@Value("${user.success.code}")
+	public int USER_SUCCESS_CODE;
+	
+	@Value("${user.success.message}")
+	public String USER_SUCCESS_MESSAGE;
+	
 	@Value("${user.nickname.empty.code}")
 	public int USER_EMPTY_NICKNAME_CODE;
 	

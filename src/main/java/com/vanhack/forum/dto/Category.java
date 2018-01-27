@@ -5,7 +5,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 @Table(name = "vap_forum_category")
@@ -14,13 +15,18 @@ public class Category {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	@Size(min = 5, max = 30)
+	@Length(min = 5, max = 20, message = "*Category name must have between 5 and 20 characters")
+	@NotEmpty(message = "*Please provide a category name")
 	private String name;
 
 	public Category() {
 		super();
 	}
-	
+
+	public Category(String name) {
+		this.name = name;
+	}
+
 	public Long getId() {
 		return id;
 	}
