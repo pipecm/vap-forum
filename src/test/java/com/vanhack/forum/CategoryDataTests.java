@@ -24,7 +24,7 @@ import com.vanhack.forum.dao.CategoryDAO;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class CategoryTests {
+public class CategoryDataTests {
 
 	@Autowired
     private TestEntityManager entityManager;
@@ -34,7 +34,7 @@ public class CategoryTests {
 	
 	private static Validator validator;
 	
-	private static final Logger log = LogManager.getLogger(CategoryTests.class);
+	private static final Logger log = LogManager.getLogger(CategoryDataTests.class);
 
     @Before
     public void setUp() {

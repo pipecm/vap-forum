@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.vanhack.forum.dao.UserDAO;
 import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.exception.ForumException;
+import com.vanhack.forum.exception.ForumExceptionFactory;
 import com.vanhack.forum.util.UserCodes;
 
 @Service
@@ -28,15 +29,15 @@ public class UserService {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
-	public int addUser(User user) throws UserException {
+	public int addUser(User user) throws ForumException {
 		if(validateUser(user)) {
 			try {
 				user.setPassword(passwordEncoder.encode(user.getPassword()));
 				userDao.save(user);
-			} catch(Exception e) {
-				UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
-				ue.initCause(e);
-				throw ue;
+			} catch(Exception cause) {
+				throwUserException(userCodes.USER_UNEXPECTED_ERROR_CODE, 
+									userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
+									cause);
 			}
 		}
 		return userCodes.USER_SUCCESS_CODE;
@@ -58,43 +59,49 @@ public class UserService {
 		return userDao.findByEmail(email);
 	}
 
-	public int updateUser(User user) throws UserException {
+	public int updateUser(User user) throws ForumException {
 		if(validateUser(user)) {
 			try {
 				userDao.save(user);
-			} catch(Exception e) {
-				UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
-				ue.initCause(e);
-				throw ue;
+			} catch(Exception cause) {
+				throwUserException(userCodes.USER_UNEXPECTED_ERROR_CODE, 
+									userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
+									cause);
 			}
 		}
 		return userCodes.USER_SUCCESS_CODE;
 	}
 	
-	public int deleteUser(Long id) throws UserException {
+	public int deleteUser(Long id) throws ForumException {
 		try {
 			userDao.delete(id);
-		} catch(Exception e) {
-			UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
-			ue.initCause(e);
-			throw ue;
+		} catch(Exception cause) {
+			throwUserException(userCodes.USER_UNEXPECTED_ERROR_CODE, 
+								userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
+								cause);
 		}
 		return userCodes.USER_SUCCESS_CODE;
 	}
 	
-	private boolean validateUser(User user) throws UserException {
+	private boolean validateUser(User user) throws ForumException {
 		if(user.getNickname() == null || user.getNickname().equals("")) {
-			throw new UserException(userCodes.USER_EMPTY_NICKNAME_CODE, userCodes.USER_EMPTY_NICKNAME_MESSAGE);
+			throwUserException(userCodes.USER_EMPTY_NICKNAME_CODE, 
+								userCodes.USER_EMPTY_NICKNAME_MESSAGE);
 		} else if(user.getEmail() == null || user.getEmail().equals("")) {
-			throw new UserException(userCodes.USER_EMPTY_EMAIL_CODE, userCodes.USER_EMPTY_EMAIL_MESSAGE);
+			throwUserException(userCodes.USER_EMPTY_EMAIL_CODE, 
+								userCodes.USER_EMPTY_EMAIL_MESSAGE);
 		} else if(user.getPassword() == null || user.getPassword().equals("")) {
-			throw new UserException(userCodes.USER_EMPTY_PASSWORD_CODE, userCodes.USER_EMPTY_PASSWORD_MESSAGE);
+			throwUserException(userCodes.USER_EMPTY_PASSWORD_CODE, 
+								userCodes.USER_EMPTY_PASSWORD_MESSAGE);
 		} else if(!validateEmail(user.getEmail())) {
-			throw new UserException(userCodes.USER_INVALID_EMAIL_CODE, userCodes.USER_INVALID_EMAIL_MESSAGE);
-		} else if(userDao.findByNickname(user.getNickname()) != null) {
-			throw new UserException(userCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
-		} else if (userDao.findByEmail(user.getEmail()) != null) {
-			throw new UserException(userCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
+			throwUserException(userCodes.USER_INVALID_EMAIL_CODE, 
+								userCodes.USER_INVALID_EMAIL_MESSAGE);
+		} else if(!isNicknameAvailable(user)) {
+			throwUserException(userCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, 
+								userCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
+		} else if (!isEmailAvailable(user)) {
+			throwUserException(userCodes.USER_EMAIL_ALREADY_EXISTS_CODE, 
+								userCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
 		}
 		return true;
 	}
@@ -126,4 +133,13 @@ public class UserService {
 		}
 	}
 
+	private void throwUserException(int code, String message) throws ForumException {
+		throw ForumExceptionFactory.create(ForumExceptionFactory.USER_EXCEPTION, code, message);
+	}
+	
+	private void throwUserException(int code, String message, Throwable cause) throws ForumException {
+		ForumException exception = ForumExceptionFactory.create(ForumExceptionFactory.USER_EXCEPTION, code, message);
+		exception.initCause(cause);
+		throw exception;
+	}
 }

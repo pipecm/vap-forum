@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.service.UserService;
 
 @Controller
@@ -58,7 +58,7 @@ public class LoginController {
 				modelAndView.addObject("successMessage", "User has been registered successfully");
 				modelAndView.addObject("user", new User());
 				modelAndView.setViewName("signup");
-			} catch(UserException e) {
+			} catch(ForumException e) {
 				log.error(e.getMessage(), e);
 			}
 			

@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import com.vanhack.forum.dto.Category;
 import com.vanhack.forum.service.CategoryService;
 
 @RunWith(SpringRunner.class)
+@DataJpaTest
 public class CategoryServiceTests {
 	
 	@TestConfiguration
@@ -41,10 +43,18 @@ public class CategoryServiceTests {
 	}
 	 
 	@Test
-	public void testingMockRepository() {
+	public void whenFindByName_thenReturnCategory() {
 		String name = "sports";
 		Category found = categoryService.findByName(name);
 	    	
 		assertThat(found.getName()).isEqualTo(name);
+	}
+	
+	@Test
+	public void whenFindingCategoryNotExists_thenError() {
+		String name = "leisure";
+		Category found = categoryService.findByName(name);
+	    	
+		assertThat(found).isNull();
 	}
 }

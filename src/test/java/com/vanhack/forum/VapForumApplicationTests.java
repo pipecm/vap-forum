@@ -13,9 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vanhack.forum.controller.UserController;
 import com.vanhack.forum.dto.User;
-import com.vanhack.forum.exception.UserException;
+import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.service.UserService;
 
 @RunWith(SpringRunner.class)
@@ -35,7 +34,7 @@ public class VapForumApplicationTests {
 		try {
 			User user = getTestUser();
 			assertTrue(userService.addUser(user) == 0);
-		} catch(UserException e) {
+		} catch(ForumException e) {
 			log.error(e.getMessage(),e);
 		}
 	}
@@ -71,43 +70,43 @@ public class VapForumApplicationTests {
 		assertTrue(userService.findByEmail("pipecm@gmail.com") == null);
 	}
 	
-	@Test(expected = UserException.class)
-	public void h_insertUserWithExistingNickname() throws UserException {
+	@Test(expected = ForumException.class)
+	public void h_insertUserWithExistingNickname() throws ForumException {
 		User user = getTestUser();
 		user.setNickname("vanhack");
 		assertFalse(userService.addUser(user) == 0);
 	}
 	
-	@Test(expected = UserException.class)
-	public void i_insertUserWithExistingEmail() throws UserException {
+	@Test(expected = ForumException.class)
+	public void i_insertUserWithExistingEmail() throws ForumException {
 		User user = getTestUser();
 		user.setEmail("vanhack@vanhack.com");
 		assertFalse(userService.addUser(user) == 0);
 	}
 	
-	@Test(expected = UserException.class)
-	public void j_insertUserWithEmptyNickname() throws UserException {
+	@Test(expected = ForumException.class)
+	public void j_insertUserWithEmptyNickname() throws ForumException {
 		User user = getTestUser();
 		user.setNickname("");
 		assertFalse(userService.addUser(user) == 0);
 	}
 	
-	@Test(expected = UserException.class)
-	public void k_insertUserWithEmptyEmail() throws UserException {
+	@Test(expected = ForumException.class)
+	public void k_insertUserWithEmptyEmail() throws ForumException {
 		User user = getTestUser();
 		user.setEmail("");
 		assertFalse(userService.addUser(user) == 0);
 	}
 	
-	@Test(expected = UserException.class)
-	public void l_insertUserWithEmptyPassword() throws UserException {
+	@Test(expected = ForumException.class)
+	public void l_insertUserWithEmptyPassword() throws ForumException {
 		User user = getTestUser();
 		user.setPassword("");
 		assertFalse(userService.addUser(user) == 0);
 	}
 	
-	@Test(expected = UserException.class)
-	public void m_insertUserWithInvalidEmail() throws UserException {
+	@Test(expected = ForumException.class)
+	public void m_insertUserWithInvalidEmail() throws ForumException {
 		User user = getTestUser();
 		user.setNickname("test");
 		user.setEmail("vanhack.vanhack.com");
@@ -120,7 +119,7 @@ public class VapForumApplicationTests {
 			User user = userService.findByNickname("vanhack");
 			user.setNickname("felipe");
 			assertTrue(userService.updateUser(user) == 0);
-		} catch(UserException e) {
+		} catch(ForumException e) {
 			log.error(e.getMessage(), e);
 		}	
 	}
@@ -130,7 +129,7 @@ public class VapForumApplicationTests {
 		try {
 			User user = userService.findByNickname("felipe");
 			assertTrue(userService.deleteUser(user.getId()) == 0);
-		} catch(UserException e) {
+		} catch(ForumException e) {
 			log.error(e.getMessage(), e);
 		}	
 	}
