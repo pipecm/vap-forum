@@ -10,9 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.vanhack.forum.dao.UserDAO;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.UserException;
-import com.vanhack.forum.repo.UserRepository;
 import com.vanhack.forum.util.UserCodes;
 
 @Service
@@ -20,7 +20,7 @@ import com.vanhack.forum.util.UserCodes;
 public class UserService {
 	
 	@Autowired
-	private UserRepository userRepository;
+	private UserDAO userDao;
 	
 	@Autowired
 	private UserCodes userCodes;
@@ -32,7 +32,7 @@ public class UserService {
 		if(validateUser(user)) {
 			try {
 				user.setPassword(passwordEncoder.encode(user.getPassword()));
-				userRepository.save(user);
+				userDao.save(user);
 			} catch(Exception e) {
 				UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
 				ue.initCause(e);
@@ -43,25 +43,25 @@ public class UserService {
 	}
 	
 	public List<User> getAllUsers() {
-		return userRepository.findAll();
+		return userDao.findAll();
 	}
 
 	public User findById(Long id) {
-		return userRepository.findById(id);
+		return userDao.findById(id);
 	}
 
 	public User findByNickname(String nickname) {
-		return userRepository.findByNickname(nickname);
+		return userDao.findByNickname(nickname);
 	}
 
 	public User findByEmail(String email) {
-		return userRepository.findByEmail(email);
+		return userDao.findByEmail(email);
 	}
 
 	public int updateUser(User user) throws UserException {
 		if(validateUser(user)) {
 			try {
-				userRepository.save(user);
+				userDao.save(user);
 			} catch(Exception e) {
 				UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
 				ue.initCause(e);
@@ -73,7 +73,7 @@ public class UserService {
 	
 	public int deleteUser(Long id) throws UserException {
 		try {
-			userRepository.delete(id);
+			userDao.delete(id);
 		} catch(Exception e) {
 			UserException ue = new UserException(userCodes.USER_UNEXPECTED_ERROR_CODE, userCodes.USER_UNEXPECTED_ERROR_MESSAGE);
 			ue.initCause(e);
@@ -91,9 +91,9 @@ public class UserService {
 			throw new UserException(userCodes.USER_EMPTY_PASSWORD_CODE, userCodes.USER_EMPTY_PASSWORD_MESSAGE);
 		} else if(!validateEmail(user.getEmail())) {
 			throw new UserException(userCodes.USER_INVALID_EMAIL_CODE, userCodes.USER_INVALID_EMAIL_MESSAGE);
-		} else if(userRepository.findByNickname(user.getNickname()) != null) {
+		} else if(userDao.findByNickname(user.getNickname()) != null) {
 			throw new UserException(userCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, userCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
-		} else if (userRepository.findByEmail(user.getEmail()) != null) {
+		} else if (userDao.findByEmail(user.getEmail()) != null) {
 			throw new UserException(userCodes.USER_EMAIL_ALREADY_EXISTS_CODE, userCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
 		}
 		return true;
@@ -111,7 +111,7 @@ public class UserService {
 	}
 	
 	public boolean isNicknameAvailable(User user) {;
-		if(userRepository.checkNickname(user.getId(), user.getNickname()) == null) {
+		if(userDao.checkNickname(user.getId(), user.getNickname()) == null) {
 			return true;
 		} else {
 			return false;
@@ -119,7 +119,7 @@ public class UserService {
 	}
 	
 	public boolean isEmailAvailable(User user) {
-		if(userRepository.checkEmail(user.getId(), user.getEmail()) == null) {
+		if(userDao.checkEmail(user.getId(), user.getEmail()) == null) {
 			return true;
 		} else {
 			return false;

@@ -12,8 +12,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.vanhack.forum.dao.CategoryDAO;
 import com.vanhack.forum.dto.Category;
-import com.vanhack.forum.repo.CategoryRepository;
 import com.vanhack.forum.service.CategoryService;
 
 @RunWith(SpringRunner.class)
@@ -28,7 +28,7 @@ public class CategoryServiceTests {
 	}
 	
 	@MockBean
-	private CategoryRepository categoryRepository;
+	private CategoryDAO categoryDao;
 	
 	@Autowired
 	private CategoryService categoryService;
@@ -36,7 +36,7 @@ public class CategoryServiceTests {
 	@Before
 	public void setUp() {
 		Category sports = new Category("sports");
-		Mockito.when(categoryRepository.findByName(sports.getName()))
+		Mockito.when(categoryDao.findByName(sports.getName()))
 			.thenReturn(sports);
 	}
 	 

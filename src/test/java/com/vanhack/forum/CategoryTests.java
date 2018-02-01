@@ -20,7 +20,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vanhack.forum.dto.Category;
-import com.vanhack.forum.repo.CategoryRepository;
+import com.vanhack.forum.dao.CategoryDAO;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
@@ -30,7 +30,7 @@ public class CategoryTests {
     private TestEntityManager entityManager;
 	
 	@Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryDAO categoryDao;
 	
 	private static Validator validator;
 	
@@ -44,14 +44,14 @@ public class CategoryTests {
     
 	@Test
 	public void whenTableIsEmpty_noCategoriesFound() {
-		Iterable<Category> categories = categoryRepository.findAll();
+		Iterable<Category> categories = categoryDao.findAll();
 		assertThat(categories).isEmpty();
 	}
 	
 	@Test
 	public void whenCategoryIsSaved_itMustBeRecordedInDB() {
 		Category games = new Category("games");
-		categoryRepository.save(games);
+		categoryDao.save(games);
 		
 		assertThat(games).hasFieldOrPropertyWithValue("name", "games");
 	}
@@ -62,7 +62,7 @@ public class CategoryTests {
     	entityManager.persist(music);
     	entityManager.flush();
 
-    	Category found = categoryRepository.findByName(music.getName());
+    	Category found = categoryDao.findByName(music.getName());
     	
     	assertThat(found.getName()).isEqualTo(music.getName());
     }
