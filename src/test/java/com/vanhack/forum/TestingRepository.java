@@ -13,27 +13,32 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import com.vanhack.forum.dao.CategoryDAO;
 import com.vanhack.forum.dao.UserDAO;
+import com.vanhack.forum.dto.Category;
 import com.vanhack.forum.dto.User;
 
 @Configuration
-@EnableJpaRepositories(basePackageClasses = UserDAO.class)
+@EnableJpaRepositories(basePackageClasses = { UserDAO.class, CategoryDAO.class })
 public class TestingRepository {
 	
 	@Bean
+//	@ConfigurationProperties("spring.datasource")
     public DataSource dataSource() {
-        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-        return builder.setType( EmbeddedDatabaseType.H2 ).build();
+		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+		return builder.setType( EmbeddedDatabaseType.H2 ).build();
+//		return DataSourceBuilder.create().build();
     }
 	
 	@Bean
     public EntityManagerFactory entityManagerFactory() {
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl( true );
+        vendorAdapter.setGenerateDdl(true);
 
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter( vendorAdapter );
         factory.setPackagesToScan(User.class.getPackage().getName());
+        factory.setPackagesToScan(Category.class.getPackage().getName());
         factory.setDataSource(dataSource());
         factory.afterPropertiesSet();
 

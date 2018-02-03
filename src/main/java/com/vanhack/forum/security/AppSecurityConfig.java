@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +26,7 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("select email, password, id from vap_forum_user where email = ?")
 	private String userQuery;
 	
-	@Value("select email, 'admin' from vap_forum_user where email = ?")
+	@Value("select email, 'ADMIN' from vap_forum_user where email = ?")
 	private String roleQuery;
 	
 	@Override
@@ -41,22 +41,26 @@ public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
 	
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    	http.
-		authorizeRequests()
-			.antMatchers("/").permitAll()
-			.antMatchers("/login").permitAll()
-			.antMatchers("/signup").permitAll()
-			.antMatchers("/api/**").permitAll()
-			.antMatchers("/admin/**").hasAuthority("admin").anyRequest()
-			.authenticated().and().csrf().disable().formLogin()
-			.loginPage("/login").failureUrl("/login?error=true")
+    	http
+    		.formLogin().loginPage("/login")
+    		.failureUrl("/login?error=true")
 			.defaultSuccessUrl("/home")
-			.usernameParameter("email")
-			.passwordParameter("password")
-			.and().logout()
+//			.usernameParameter("email")
+//			.passwordParameter("password")
+    		.and().authorizeRequests()
+    		.antMatchers("/login").permitAll()
+    		.antMatchers("/signup").permitAll()
+    		.antMatchers("/api/**").authenticated()
+    		.antMatchers("/admin/**").hasAuthority("ADMIN")
+    		.anyRequest().fullyAuthenticated()
+    		.and().httpBasic()
+    		.and().csrf().disable()
+    		.logout()
 			.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 			.logoutSuccessUrl("/").and().exceptionHandling()
 			.accessDeniedPage("/access-denied");
+
+
     }
     
     @Override
