@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -57,9 +57,7 @@ public class CategoryControllerTests {
 		Category music = new Category("music");
 		Category games = new Category("games");
 		
-		List<Category> categoriesList = new ArrayList<Category>();
-		categoriesList.add(music);
-		categoriesList.add(games);
+		List<Category> categoriesList = Arrays.asList(music, games);
 		
 		given(service.getAllCategories()).willReturn(categoriesList);
 		
@@ -70,6 +68,5 @@ public class CategoryControllerTests {
 				.andExpect(jsonPath("$", hasSize(2)))
 				.andExpect(jsonPath("$[0].name", is(music.getName())));
 		
-
 	}
 }

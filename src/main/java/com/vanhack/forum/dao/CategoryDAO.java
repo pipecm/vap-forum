@@ -1,6 +1,5 @@
 package com.vanhack.forum.dao;
 
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,5 +15,5 @@ public interface CategoryDAO extends JpaRepository<Category, Long> {
 	public Category findByName(String name);
 	
 	@Query(value = SQL_CATEGORY_CHECK_NAME, nativeQuery = true)
-	public List<Category> checkName(Long id, String name);
+	public Category checkName(Long id, String name);
 }

@@ -1,6 +1,12 @@
 package com.vanhack.forum.service;
 
 import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,10 +30,13 @@ public class CategoryService {
 	@Autowired
 	private CategoryCodes categoryCodes;
 	
+	private Validator validator;
+	
 	private static final Logger log = LogManager.getLogger(CategoryService.class);
 	
 	public CategoryService() {
-		
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        this.validator = factory.getValidator();
 	}
 	
 	public int addCategory(Category category) throws ForumException {
@@ -83,15 +92,6 @@ public class CategoryService {
 		return categoryCodes.CATEGORY_SUCCESS_CODE;
 	}
 	
-	public boolean isCategoryAvailable(Category category) {
-		List<Category> list = categoryDao.checkName(category.getId(), category.getName());
-		if(list.isEmpty() || list == null) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
 	private boolean validateCategory(Category category) throws ForumException {
 		if(category.getName() == null || category.getName().equals("")) {
 			throwCategoryException(categoryCodes.CATEGORY_EMPTY_NAME_CODE,
@@ -99,6 +99,13 @@ public class CategoryService {
 		} else if(!isNameAvailable(category)) {
 			throwCategoryException(categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE,
 									categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE);
+		} else {
+			Set<ConstraintViolation<Category>> violations = validator.validate(category);
+			if(!violations.isEmpty()) {
+				throwCategoryException(categoryCodes.CATEGORY_VALIDATION_ERROR_CODE,
+										categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE
+										+ ": " + getValidationMessages(violations));
+			}
 		}
 		return true;
 	}
@@ -119,5 +126,14 @@ public class CategoryService {
 		ForumException exception = ForumExceptionFactory.create(ForumExceptionFactory.CATEGORY_EXCEPTION, code, message);
 		exception.initCause(cause);
 		throw exception;
+	}
+	
+	private String getValidationMessages(Set<ConstraintViolation<Category>> violations) {
+		StringBuilder builder = new StringBuilder();
+		for(ConstraintViolation<Category> violation : violations) {
+    		builder.append(violation.getMessage());
+    		builder.append("; ");
+    	}
+		return new String(builder);
 	}
 }

@@ -2,6 +2,7 @@ package com.vanhack.forum;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -25,6 +26,11 @@ import com.vanhack.forum.dao.CategoryDAO;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class CategoryDataTests {
+	
+	private static final int CATEGORY_OK 	= 0;
+	private static final int EMPTY_NAME 	= 1;
+	private static final int SHORTER_NAME 	= 2;
+	private static final int LONGER_NAME 	= 3;
 
 	@Autowired
     private TestEntityManager entityManager;
@@ -44,7 +50,7 @@ public class CategoryDataTests {
     
 	@Test
 	public void whenTableIsEmpty_noCategoriesFound() {
-		Iterable<Category> categories = categoryDao.findAll();
+		List<Category> categories = categoryDao.findAll();
 		assertThat(categories).isEmpty();
 	}
 	
@@ -68,39 +74,55 @@ public class CategoryDataTests {
     }
     
     @Test
+    public void whenCategoryNameHasBetween5and20Characters_thenOK() {
+    	testInvalidAttributes(CATEGORY_OK);
+    }
+    
+    @Test
     public void whenCategoryNameIsEmpty_thenError() {
-    	Category empty = new Category("");
-    	Set<ConstraintViolation<Category>> violations = validator.validate(empty);
-    	for(ConstraintViolation<Category> violation : violations) {
-    		log.info(violation.getMessage());
-    	}
-    	assertThat(violations).isNotEmpty();
+    	testInvalidAttributes(EMPTY_NAME);
     }
     
     @Test
     public void whenCategoryNameHasLessThan5Characters_thenError() {
-    	Category shorterThan5 = new Category("Test");
-    	Set<ConstraintViolation<Category>> violations = validator.validate(shorterThan5);
-    	for(ConstraintViolation<Category> violation : violations) {
-    		log.info(violation.getMessage());
-    	}
-    	assertThat(violations).isNotEmpty();
+    	testInvalidAttributes(SHORTER_NAME);
     }
     
     @Test
     public void whenCategoryNameHasMoreThan20Characters_thenError() {
-    	Category longerThan20 = new Category("TestTestTestTestTestTest");
-    	Set<ConstraintViolation<Category>> violations = validator.validate(longerThan20);
+    	testInvalidAttributes(LONGER_NAME);
+    }
+    
+    private Category getTestCategory() {
+    	return new Category("Testing");
+    }
+    
+    private void testInvalidAttributes(int attribute) {
+    	Category testCategory = getTestCategory();
+    	
+    	switch(attribute) {
+    		case EMPTY_NAME:
+    			testCategory.setName("");
+    			break;
+    		case SHORTER_NAME:
+    			testCategory.setName("test");
+    			break;	
+    		case LONGER_NAME:
+    			testCategory.setName("test_test_test_test_test");
+    			break;
+    		default:
+    			break;
+    	}		
+    	
+    	Set<ConstraintViolation<Category>> violations = validator.validate(testCategory);
     	for(ConstraintViolation<Category> violation : violations) {
     		log.info(violation.getMessage());
     	}
-    	assertThat(violations).isNotEmpty();
-    }
-    
-    @Test
-    public void whenCategoryNameHasBetween5and20Characters_thenOK() {
-    	Category validName = new Category("Leisure");
-    	Set<ConstraintViolation<Category>> violations = validator.validate(validName);
-    	assertThat(violations).isEmpty();
+    	
+    	if(attribute == CATEGORY_OK) {
+    		assertThat(violations).isEmpty();
+    	} else {
+    		assertThat(violations).isNotEmpty();
+    	}
     }
 }

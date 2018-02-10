@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 @PropertySource("classpath:category.properties")
 public class CategoryCodes {
+	
 	@Value("${category.success.code}")
 	public int CATEGORY_SUCCESS_CODE;
 	
@@ -24,6 +25,12 @@ public class CategoryCodes {
 	
 	@Value("${category.name.exists.message}")
 	public String CATEGORY_NAME_ALREADY_EXISTS_MESSAGE;
+	
+	@Value("${category.validation.error.code}")
+	public int CATEGORY_VALIDATION_ERROR_CODE;
+	
+	@Value("${category.validation.error.message}")
+	public String CATEGORY_VALIDATION_ERROR_MESSAGE;
 	
 	@Value("${category.unexpected.code}")
 	public int CATEGORY_UNEXPECTED_ERROR_CODE;
