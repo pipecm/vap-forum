@@ -1,17 +1,14 @@
 package com.vanhack.forum.exception;
 
 public class ForumExceptionFactory {
-	
-	public static final int USER_EXCEPTION = 1;
-	public static final int CATEGORY_EXCEPTION = 2;
-	public static final int TOPIC_EXCEPTION = 3;
-	public static final int POST_EXCEPTION = 4;
+
+	public static enum ExceptionType {USER_EXCEPTION, CATEGORY_EXCEPTION, TOPIC_EXCEPTION, POST_EXCEPTION};
 	
 	private ForumExceptionFactory() {
 		
 	}
 	
-	public static ForumException create(int exceptionType, int code, String message) 
+	public static ForumException create(ExceptionType exceptionType, int code, String message) 
 		throws IllegalArgumentException {
 		switch(exceptionType) {
 			case USER_EXCEPTION:

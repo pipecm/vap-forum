@@ -18,6 +18,7 @@ import com.vanhack.forum.dao.CategoryDAO;
 import com.vanhack.forum.dto.Category;
 import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.exception.ForumExceptionFactory;
+import com.vanhack.forum.exception.ForumExceptionFactory.ExceptionType;
 import com.vanhack.forum.util.CategoryCodes;
 
 @Service
@@ -39,10 +40,11 @@ public class CategoryService {
         this.validator = factory.getValidator();
 	}
 	
-	public int addCategory(Category category) throws ForumException {
+	public Category addCategory(Category category) throws ForumException {
+		Category newCategory = null;
 		if(validateCategory(category)) {
 			try {
-				categoryDao.save(category);
+				newCategory = categoryDao.save(category);
 			} catch(Exception cause) {
 				throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
 										categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
@@ -50,7 +52,7 @@ public class CategoryService {
 			}
 		}
 		
-		return categoryCodes.CATEGORY_SUCCESS_CODE;
+		return newCategory;
 	}
 
 	public List<Category> getAllCategories() {
@@ -119,11 +121,11 @@ public class CategoryService {
 	}
 	
 	private void throwCategoryException(int code, String message) throws ForumException {
-		throw ForumExceptionFactory.create(ForumExceptionFactory.CATEGORY_EXCEPTION, code, message);
+		throw ForumExceptionFactory.create(ExceptionType.CATEGORY_EXCEPTION, code, message);
 	}
 	
 	private void throwCategoryException(int code, String message, Throwable cause) throws ForumException {
-		ForumException exception = ForumExceptionFactory.create(ForumExceptionFactory.CATEGORY_EXCEPTION, code, message);
+		ForumException exception = ForumExceptionFactory.create(ExceptionType.CATEGORY_EXCEPTION, code, message);
 		exception.initCause(cause);
 		throw exception;
 	}

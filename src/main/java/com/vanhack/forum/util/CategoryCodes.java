@@ -14,6 +14,15 @@ public class CategoryCodes {
 	@Value("${category.success.message}")
 	public String CATEGORY_SUCCESS_MESSAGE;
 	
+	@Value("${category.insert.success.message}")
+	public String CATEGORY_INSERT_SUCCESS_MESSAGE;
+	
+	@Value("${category.findall.success.message}")
+	public String CATEGORY_FIND_ALL_SUCCESS_MESSAGE;
+	
+	@Value("${category.findbyname.success.message}")
+	public String CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE;
+	
 	@Value("${category.name.empty.code}")
 	public int CATEGORY_EMPTY_NAME_CODE;
 	
@@ -31,6 +40,18 @@ public class CategoryCodes {
 	
 	@Value("${category.validation.error.message}")
 	public String CATEGORY_VALIDATION_ERROR_MESSAGE;
+	
+	@Value("${category.notfound.code}")
+	public int CATEGORY_NOT_FOUND_CODE;
+	
+	@Value("${category.notfound.message}")
+	public String CATEGORY_NOT_FOUND_MESSAGE;
+	
+	@Value("${category.name.notfound.code}")
+	public int CATEGORY_NAME_NOT_FOUND_CODE;
+	
+	@Value("${category.name.notfound.message}")
+	public String CATEGORY_NAME_NOT_FOUND_MESSAGE;
 	
 	@Value("${category.unexpected.code}")
 	public int CATEGORY_UNEXPECTED_ERROR_CODE;

@@ -27,11 +27,6 @@ import com.vanhack.forum.dao.CategoryDAO;
 @DataJpaTest
 public class CategoryDataTests {
 	
-	private static final int CATEGORY_OK 	= 0;
-	private static final int EMPTY_NAME 	= 1;
-	private static final int SHORTER_NAME 	= 2;
-	private static final int LONGER_NAME 	= 3;
-
 	@Autowired
     private TestEntityManager entityManager;
 	
@@ -57,9 +52,10 @@ public class CategoryDataTests {
 	@Test
 	public void whenCategoryIsSaved_itMustBeRecordedInDB() {
 		Category games = new Category("games");
-		categoryDao.save(games);
+		Category newCategory = categoryDao.save(games);
 		
-		assertThat(games).hasFieldOrPropertyWithValue("name", "games");
+		assertThat(newCategory.getId()).isNotNull();
+		assertThat(newCategory).hasFieldOrPropertyWithValue("name", games.getName());
 	}
 	
     @Test
@@ -75,32 +71,32 @@ public class CategoryDataTests {
     
     @Test
     public void whenCategoryNameHasBetween5and20Characters_thenOK() {
-    	testInvalidAttributes(CATEGORY_OK);
+    	testInvalidAttributes(CategoryTestType.CATEGORY_OK);
     }
     
     @Test
     public void whenCategoryNameIsEmpty_thenError() {
-    	testInvalidAttributes(EMPTY_NAME);
+    	testInvalidAttributes(CategoryTestType.EMPTY_NAME);
     }
     
     @Test
     public void whenCategoryNameHasLessThan5Characters_thenError() {
-    	testInvalidAttributes(SHORTER_NAME);
+    	testInvalidAttributes(CategoryTestType.SHORTER_NAME);
     }
     
     @Test
     public void whenCategoryNameHasMoreThan20Characters_thenError() {
-    	testInvalidAttributes(LONGER_NAME);
+    	testInvalidAttributes(CategoryTestType.LONGER_NAME);
     }
     
     private Category getTestCategory() {
     	return new Category("Testing");
     }
     
-    private void testInvalidAttributes(int attribute) {
+    private void testInvalidAttributes(CategoryTestType testType) {
     	Category testCategory = getTestCategory();
     	
-    	switch(attribute) {
+    	switch(testType) {
     		case EMPTY_NAME:
     			testCategory.setName("");
     			break;
@@ -119,7 +115,7 @@ public class CategoryDataTests {
     		log.info(violation.getMessage());
     	}
     	
-    	if(attribute == CATEGORY_OK) {
+    	if(testType == CategoryTestType.CATEGORY_OK) {
     		assertThat(violations).isEmpty();
     	} else {
     		assertThat(violations).isNotEmpty();

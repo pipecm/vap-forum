@@ -14,6 +14,7 @@ import com.vanhack.forum.dao.UserDAO;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.exception.ForumExceptionFactory;
+import com.vanhack.forum.exception.ForumExceptionFactory.ExceptionType;
 import com.vanhack.forum.util.UserCodes;
 
 @Service
@@ -134,11 +135,11 @@ public class UserService {
 	}
 
 	private void throwUserException(int code, String message) throws ForumException {
-		throw ForumExceptionFactory.create(ForumExceptionFactory.USER_EXCEPTION, code, message);
+		throw ForumExceptionFactory.create(ExceptionType.USER_EXCEPTION, code, message);
 	}
 	
 	private void throwUserException(int code, String message, Throwable cause) throws ForumException {
-		ForumException exception = ForumExceptionFactory.create(ForumExceptionFactory.USER_EXCEPTION, code, message);
+		ForumException exception = ForumExceptionFactory.create(ExceptionType.USER_EXCEPTION, code, message);
 		exception.initCause(cause);
 		throw exception;
 	}

@@ -49,6 +49,10 @@ public class CategoryServiceTests {
 		Category sports = new Category("sports");
 		Category music = new Category("music");
 		
+		Category testing = new Category();
+		testing.setId(1L);
+		testing.setName("testing");
+		
 		List<Category> categoryList = Arrays.asList(sports, music);
 		
 		Mockito.when(categoryDao.findByName(sports.getName()))
@@ -57,6 +61,8 @@ public class CategoryServiceTests {
 			.thenReturn(categoryList);
 		Mockito.when(categoryDao.checkName(1L, "sports"))
 			.thenReturn(sports);
+		Mockito.when(categoryDao.save(new Category("testing")))
+			.thenReturn(testing);
 	}
 	
 	@Test
@@ -82,58 +88,74 @@ public class CategoryServiceTests {
 	
 	@Test
 	public void whenAddCategoryWithValidName_thenOK() throws ForumException {
-		Category validCategory = new Category("Testing");
-		assertThat(categoryService.addCategory(validCategory)).isEqualTo(0);
+		testInvalidAttributes(CategoryTestType.CATEGORY_OK);
 	}
 	
 	@Test
 	public void whenAddCategoryWithEmptyName_thenExceptionIsThrown() {
-		try {
-			Category emptyCategory = new Category("");
-			categoryService.addCategory(emptyCategory);
-		} catch(ForumException thrown) {
-			log.error(thrown.getMessage(), thrown);
-			assertThat(thrown).isInstanceOf(CategoryException.class);
-			assertThat(thrown.getCode()).isEqualTo(201);
-		}
-		
-	}
-	
-	@Test
-	public void whenAddCategoryWithExistingName_thenExceptionIsThrown() {
-		try {
-			Category existingCategory = new Category();
-			existingCategory.setId(1L);
-			existingCategory.setName("sports");
-			categoryService.addCategory(existingCategory);
-		} catch(ForumException thrown) {
-			log.error(thrown.getMessage(), thrown);
-			assertThat(thrown).isInstanceOf(CategoryException.class);
-			assertThat(thrown.getCode()).isEqualTo(202);
-		}
+		testInvalidAttributes(CategoryTestType.EMPTY_NAME);	
 	}
 	
 	@Test
 	public void whenAddCategoryWithNameShorterThan5Characters_thenExceptionIsThrown() {
-		try {
-			Category shorterName = new Category("Test");
-			categoryService.addCategory(shorterName);
-		} catch(ForumException thrown) {
-			log.error(thrown.getMessage(), thrown);
-			assertThat(thrown).isInstanceOf(CategoryException.class);
-			assertThat(thrown.getCode()).isEqualTo(203);
-		}
+		testInvalidAttributes(CategoryTestType.SHORTER_NAME);
 	}
 	
 	@Test
 	public void whenAddCategoryWithNameLongerThan20Characters_thenExceptionIsThrown() {
-		try {
-			Category longerName = new Category("Test_test_test_test_test");
-			categoryService.addCategory(longerName);
-		} catch(ForumException thrown) {
-			log.error(thrown.getMessage(), thrown);
-			assertThat(thrown).isInstanceOf(CategoryException.class);
-			assertThat(thrown.getCode()).isEqualTo(203);
-		}
+		testInvalidAttributes(CategoryTestType.LONGER_NAME);
 	}
+	
+	@Test
+	public void whenAddCategoryWithExistingName_thenExceptionIsThrown() {
+		testInvalidAttributes(CategoryTestType.ALREADY_EXISTS);
+	}
+	
+	private void testInvalidAttributes(CategoryTestType testType) {
+		Category testCategory = getTestCategory();
+		Category newCategory = null;
+		int exceptionCode = 0;
+    	
+    	switch(testType) {
+    		case EMPTY_NAME:
+    			testCategory.setName("");
+    			exceptionCode = 201;
+    			break;
+    		case SHORTER_NAME:
+    			testCategory.setName("test");
+    			exceptionCode = 203;
+    			break;	
+    		case LONGER_NAME:
+    			testCategory.setName("test_test_test_test_test");
+    			exceptionCode = 203;
+    			break;
+    		case ALREADY_EXISTS:
+    			testCategory.setId(1L);
+    			testCategory.setName("sports");
+    			exceptionCode = 202;
+    			break;
+    		default:
+    			break;
+    	}		
+    	
+    	try {
+    		newCategory = categoryService.addCategory(testCategory);
+		} catch(ForumException thrown) {
+			log.error(thrown.getMessage());
+			assertThat(thrown).isInstanceOf(CategoryException.class);
+			assertThat(thrown.getCode()).isEqualTo(exceptionCode);
+			assertThat(newCategory).isNull();
+		}
+    	
+    	if(testType == CategoryTestType.CATEGORY_OK) {
+	    	assertThat(newCategory).isNotNull();
+	    	assertThat(newCategory.getId()).isNotNull();
+	    	assertThat(newCategory.getName()).isEqualTo(testCategory.getName());
+    	}
+
+	}
+	
+	private Category getTestCategory() {
+    	return new Category("testing");
+    }
 }
