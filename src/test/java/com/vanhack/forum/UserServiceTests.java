@@ -2,6 +2,9 @@ package com.vanhack.forum;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,10 +45,24 @@ public class UserServiceTests {
 		testUser.setEmail("test@vanhack.com");
 		testUser.setPassword("testuser");
 		
-		Mockito.when(userDao.findByNickname(testUser.getNickname()))
-			.thenReturn(testUser);
-		Mockito.when(userDao.findByEmail(testUser.getEmail()))
-			.thenReturn(testUser);	
+		User anotherUser = new User();
+		anotherUser.setNickname("another_user");
+		anotherUser.setEmail("another@vanhack.com");
+		anotherUser.setPassword("anotheruser");
+		
+		List<User> userList = Arrays.asList(testUser, anotherUser);
+		
+		Mockito.when(userDao.findByNicknameContaining(testUser.getNickname()))
+			.thenReturn(Arrays.asList(testUser));
+		Mockito.when(userDao.findByEmailContaining(testUser.getEmail()))
+			.thenReturn(Arrays.asList(testUser));	
+		Mockito.when(userDao.findAll())
+			.thenReturn(userList);
+	}
+	
+	@Test
+	public void whenFindAll_thenReturnAllUsers() {
+		assertThat(userService.getAllUsers()).isNotEmpty();
 	}
 	
 	@Test
@@ -62,5 +79,15 @@ public class UserServiceTests {
 		User found = userService.findByEmail(email);
 		
 		assertThat(found.getEmail()).isEqualTo(email);
+	}
+	
+	@Test
+	public void whenFindingNotExistingNicknameUser_thenError() {
+		assertThat(userService.findByNickname("not_found")).isNull();
+	}
+	
+	@Test
+	public void whenFindingNotExistingEmailUser_thenError() {
+		
 	}
 }

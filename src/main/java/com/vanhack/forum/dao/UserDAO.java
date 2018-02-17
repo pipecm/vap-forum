@@ -1,5 +1,7 @@
 package com.vanhack.forum.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,6 +21,10 @@ public interface UserDAO extends JpaRepository<User, Long> {
 	public User findByNickname(String nickname);
 	
 	public User findByEmail(String email);
+	
+	public List<User> findByNicknameContaining(String nickname);
+	
+	public List<User> findByEmailContaining(String email);
 	
 	@Query(value = SQL_USER_CHECK_NICKNAME, nativeQuery = true)
 	public User checkNickname(Long id, String nickname);

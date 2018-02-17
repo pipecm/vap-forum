@@ -1,7 +1,6 @@
-package com.vanhack.forum.service;
+package com.vanhack.forum.controller;
 
 import java.util.List;
-
 import com.vanhack.forum.exception.ForumException;
 
 public abstract class ForumResponse {

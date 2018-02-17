@@ -30,18 +30,19 @@ public class UserService {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
-	public int addUser(User user) throws ForumException {
+	public User addUser(User user) throws ForumException {
+		User savedUser = null;
 		if(validateUser(user)) {
 			try {
 				user.setPassword(passwordEncoder.encode(user.getPassword()));
-				userDao.save(user);
+				savedUser = userDao.save(user);
 			} catch(Exception cause) {
 				throwUserException(userCodes.USER_UNEXPECTED_ERROR_CODE, 
 									userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
 									cause);
 			}
 		}
-		return userCodes.USER_SUCCESS_CODE;
+		return savedUser;
 	}
 	
 	public List<User> getAllUsers() {
@@ -59,18 +60,27 @@ public class UserService {
 	public User findByEmail(String email) {
 		return userDao.findByEmail(email);
 	}
+	
+	public List<User> findByNicknameContaining(String nickname) {
+		return userDao.findByNicknameContaining(nickname);
+	}
 
-	public int updateUser(User user) throws ForumException {
+	public List<User> findByEmailContaining(String email) {
+		return userDao.findByEmailContaining(email);
+	}
+
+	public User updateUser(User user) throws ForumException {
+		User savedUser = null;
 		if(validateUser(user)) {
 			try {
-				userDao.save(user);
+				savedUser = userDao.save(user);
 			} catch(Exception cause) {
 				throwUserException(userCodes.USER_UNEXPECTED_ERROR_CODE, 
 									userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
 									cause);
 			}
 		}
-		return userCodes.USER_SUCCESS_CODE;
+		return savedUser;
 	}
 	
 	public int deleteUser(Long id) throws ForumException {
@@ -81,7 +91,7 @@ public class UserService {
 								userCodes.USER_UNEXPECTED_ERROR_MESSAGE,
 								cause);
 		}
-		return userCodes.USER_SUCCESS_CODE;
+		return UserCodes.USER_SUCCESS_CODE; //userCodes.USER_SUCCESS_CODE;
 	}
 	
 	private boolean validateUser(User user) throws ForumException {

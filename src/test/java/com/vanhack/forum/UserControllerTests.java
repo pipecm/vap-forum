@@ -6,12 +6,16 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.core.IsNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +35,8 @@ import com.vanhack.forum.controller.UserController;
 import com.vanhack.forum.dto.User;
 import com.vanhack.forum.security.AppSecurityConfig;
 import com.vanhack.forum.service.UserService;
+import com.vanhack.forum.util.UserCodes;
+import com.vanhack.forum.util.ForumConstants.TestConstants;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { VapForumApplication.class, TestingRepository.class })
@@ -47,6 +53,8 @@ public class UserControllerTests {
 	@MockBean
 	private UserService service;
 	
+	private static final String BASE_URI = "/api/user";
+	
 	@Before
     public void setUp() {
     	mock = MockMvcBuilders
@@ -54,6 +62,22 @@ public class UserControllerTests {
                 	.apply(springSecurity())
                 	.build();
     }
+	
+	@Test
+	public void givenNoUsers_whenGetUsers_thenStatusNoContent() throws Exception {
+		List<User> emptyList = new ArrayList<User>();
+		
+		given(service.getAllUsers()).willReturn(emptyList);
+		
+		mock.perform(get(getUri())
+				.with(user(TestConstants.USER).password(TestConstants.PASSWORD).roles(TestConstants.ROLES))
+				.contentType(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isNoContent())
+				.andExpect(jsonPath("$.responseCode", is(UserCodes.USER_NO_USERS_FOUND_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(UserCodes.USER_NO_USERS_FOUND_MESSAGE)))
+				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
+	}
 	
 	@Test
 	public void whenGetAllUsers_thenReturnJson() throws Exception {
@@ -66,13 +90,49 @@ public class UserControllerTests {
 		
 		given(service.getAllUsers()).willReturn(allUsers);
 		
-		mock.perform(get("/api/user")
-			.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(get(getUri())
+			.with(user(TestConstants.USER).password(TestConstants.PASSWORD).roles(TestConstants.ROLES))
 			.contentType(MediaType.APPLICATION_JSON))
+			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$", hasSize(1)))
-			.andExpect(jsonPath("$[0].nickname", is(myUser.getNickname())))
-			.andExpect(jsonPath("$[0].email", is(myUser.getEmail())));
+			.andExpect(jsonPath("$.responseCode", is(UserCodes.USER_SUCCESS_CODE)))
+			.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(UserCodes.USER_FIND_ALL_SUCCESS_MESSAGE, allUsers.size()))))
+			.andExpect(jsonPath("$.responseContent", hasSize(1)))
+			.andExpect(jsonPath("$.responseContent[0].nickname", is(myUser.getNickname())))
+			.andExpect(jsonPath("$.responseContent[0].email", is(myUser.getEmail())));
+		
 	}
+	
+	@Test
+	public void whenFindByNickname_thenReturnUserJson() throws Exception {
+		
+		User myUser = new User();
+		myUser.setNickname("pipecm");
+		myUser.setEmail("pipecm@gmail.com");
+		
+		String keyword = "pipecm";
+		given(service.findByNickname(keyword)).willReturn(myUser);
+		
+		mock.perform(get("/api/user/find")
+			.with(user(TestConstants.USER).password(TestConstants.PASSWORD).roles(TestConstants.ROLES))
+			.contentType(MediaType.APPLICATION_JSON)
+			.param("nickname", "pipecm"))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.responseCode", is(UserCodes.USER_SUCCESS_CODE)))
+			.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(UserCodes.USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE, keyword))))
+			.andExpect(jsonPath("$.responseContent", hasSize(1)))
+			.andExpect(jsonPath("$.responseContent[0].nickname", is(myUser.getNickname())))
+			.andExpect(jsonPath("$.responseContent[0].email", is(myUser.getEmail())));
+		
+	}
+	
+	private String getUri() {
+		return BASE_URI;
+	}
+	
+//	private String getUri(String name) {
+//		return BASE_URI + "/" + name;
+//	}
 	
 }

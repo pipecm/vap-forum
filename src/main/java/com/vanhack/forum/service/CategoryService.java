@@ -41,10 +41,10 @@ public class CategoryService {
 	}
 	
 	public Category addCategory(Category category) throws ForumException {
-		Category newCategory = null;
+		Category savedCategory = null;
 		if(validateCategory(category)) {
 			try {
-				newCategory = categoryDao.save(category);
+				savedCategory = categoryDao.save(category);
 			} catch(Exception cause) {
 				throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
 										categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
@@ -52,7 +52,7 @@ public class CategoryService {
 			}
 		}
 		
-		return newCategory;
+		return savedCategory;
 	}
 
 	public List<Category> getAllCategories() {
@@ -67,10 +67,11 @@ public class CategoryService {
 		return categoryDao.findByName(name);
 	}
 	
-	public int updateCategory(Category category) throws ForumException {
+	public Category updateCategory(Category category) throws ForumException {
+		Category savedCategory = null;
 		if(validateCategory(category)) {
 			try {
-				categoryDao.save(category);
+				savedCategory = categoryDao.save(category);
 			} catch(Exception cause) {
 				throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
 										categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
@@ -78,7 +79,7 @@ public class CategoryService {
 			}
 		}
 		
-		return categoryCodes.CATEGORY_SUCCESS_CODE;
+		return savedCategory;
 	}
 	
 	public int deleteCategory(Long id) throws ForumException {

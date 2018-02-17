@@ -19,14 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vanhack.forum.controller.ForumResponseFactory.ResponseType;
 import com.vanhack.forum.dto.Category;
 import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.service.CategoryService;
-import com.vanhack.forum.service.ForumResponse;
-import com.vanhack.forum.service.ForumResponseFactory;
-import com.vanhack.forum.service.ForumResponseFactory.ResponseType;
 import com.vanhack.forum.util.CategoryCodes;
 import com.vanhack.forum.util.ForumConstants;
+import com.vanhack.forum.util.ForumConstants.CategoryConstants;
 
 @RestController
 @RequestMapping(ForumConstants.API_ENDPOINT)
@@ -40,7 +39,7 @@ public class CategoryController {
 	@Autowired
 	private CategoryCodes categoryCodes;
 	
-	@GetMapping(path = ForumConstants.CATEGORY_GET_ALL_ENDPOINT)
+	@GetMapping(path = CategoryConstants.CATEGORY_GET_ALL_ENDPOINT)
 	public @ResponseBody ResponseEntity<ForumResponse> getAllCategories() {
 		ForumResponse response = null; 
 		log.info("Fetching all categories");
@@ -60,7 +59,7 @@ public class CategoryController {
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping(path = ForumConstants.CATEGORY_GET_BY_NAME_ENDPOINT)
+	@GetMapping(path = CategoryConstants.CATEGORY_GET_BY_NAME_ENDPOINT)
 	public ResponseEntity<ForumResponse> findCategoryByName(@PathVariable("name") String name) {
 		ForumResponse response = null;
 		log.info("Fetching category with name: " + name);
@@ -80,7 +79,7 @@ public class CategoryController {
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
-	@PostMapping(path = ForumConstants.CATEGORY_ADD_ENDPOINT)
+	@PostMapping(path = CategoryConstants.CATEGORY_ADD_ENDPOINT)
 	public @ResponseBody ResponseEntity<ForumResponse> addCategory(@RequestBody Category category) {
 		ForumResponse response = null;
 		try {
@@ -98,13 +97,13 @@ public class CategoryController {
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
-	@PutMapping(path = ForumConstants.CATEGORY_UPDATE_ENDPOINT)
+	@PutMapping(path = CategoryConstants.CATEGORY_UPDATE_ENDPOINT)
 	public @ResponseBody ResponseEntity<ForumResponse> updateCategory(@RequestBody Category category) {
 		ForumResponse response = null;
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
-	@DeleteMapping(path = ForumConstants.CATEGORY_DELETE_ENDPOINT)
+	@DeleteMapping(path = CategoryConstants.CATEGORY_DELETE_ENDPOINT)
 	public @ResponseBody ResponseEntity<ForumResponse> deleteCategory(@PathVariable("id") Long id) {
 		ForumResponse response = null;
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);

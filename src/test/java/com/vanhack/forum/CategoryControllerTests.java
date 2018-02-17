@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,7 @@ import com.vanhack.forum.dto.Category;
 import com.vanhack.forum.exception.ForumExceptionFactory;
 import com.vanhack.forum.exception.ForumExceptionFactory.ExceptionType;
 import com.vanhack.forum.service.CategoryService;
+import com.vanhack.forum.util.CategoryCodes;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { VapForumApplication.class, TestingRepository.class })
@@ -54,6 +56,14 @@ public class CategoryControllerTests {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
+	@Autowired
+	private CategoryCodes categoryCodes;
+	
+	private static final String BASE_URI = "/api/category";
+	private static final String USER = "pipecm";
+	private static final String PASSWORD = "vanhack";
+	private static final String ROLES = "ADMIN";
+	
 	@Before
     public void setUp() {
     	mock = MockMvcBuilders
@@ -68,12 +78,13 @@ public class CategoryControllerTests {
 		
 		given(service.getAllCategories()).willReturn(emptyList);
 		
-		mock.perform(get("/api/category")
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(get(getUri())
+				.with(user(USER).password(PASSWORD).roles(ROLES))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isNoContent())
-				.andExpect(jsonPath("$.responseCode", is(204)))
+				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_NOT_FOUND_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(categoryCodes.CATEGORY_NOT_FOUND_MESSAGE)))
 				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
 		
 	}
@@ -87,12 +98,13 @@ public class CategoryControllerTests {
 		
 		given(service.getAllCategories()).willReturn(categoriesList);
 		
-		mock.perform(get("/api/category")
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(get(getUri())
+				.with(user(USER).password(PASSWORD).roles(ROLES))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(0)))
+				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categoriesList.size()))))
 				.andExpect(jsonPath("$.responseContent", hasSize(2)))
 				.andExpect(jsonPath("$.responseContent[0].name", is(music.getName())))
 				.andExpect(jsonPath("$.responseContent[1].name", is(games.getName())));
@@ -106,12 +118,13 @@ public class CategoryControllerTests {
 		
 		given(service.findByName(name)).willReturn(random);
 		
-		mock.perform(get("/api/category/" + name)
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(get(getUri(name))
+				.with(user(USER).password(PASSWORD).roles(ROLES))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(0)))
+				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name))))
 				.andExpect(jsonPath("$.responseContent", hasSize(1)))
 				.andExpect(jsonPath("$.responseContent[0].name", is(random.getName())));
 	}
@@ -122,34 +135,14 @@ public class CategoryControllerTests {
 		
 		given(service.findByName(name)).willReturn(null);
 		
-		mock.perform(get("/api/category/" + name)
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(get(getUri(name))
+				.with(user(USER).password(PASSWORD).roles(ROLES))
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.responseCode", is(205)))
+				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_NAME_NOT_FOUND_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name))))
 				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
-	}
-	
-	@Test
-	public void whenInsertAnEmptyCategory_thenError() throws Exception {
-		Category empty = new Category("");
-		
-		given(service.addCategory(empty))
-			.willThrow(ForumExceptionFactory.create(ExceptionType.CATEGORY_EXCEPTION, 201, "Bad request"))
-			.willReturn(null);
-		
-		mock.perform(post("/api/category")
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
-				.with(csrf())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(mapper.writeValueAsString(empty))
-				.accept(MediaType.APPLICATION_JSON))
-				.andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.responseCode", is(201)))
-				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
-		
 	}
 	
 	@Test
@@ -161,17 +154,101 @@ public class CategoryControllerTests {
 		
 		given(service.addCategory(health)).willReturn(added);
 		
-		mock.perform(post("/api/category")
-				.with(user("pipecm").password("vanhack").roles("ADMIN"))
+		mock.perform(post(getUri())
+				.with(user(USER).password(PASSWORD).roles(ROLES))
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(health))
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(0)))
+				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(categoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE)))
 				.andExpect(jsonPath("$.responseContent", hasSize(1)))
 				.andExpect(jsonPath("$.responseContent[0].name", is(health.getName())));
 
 	}
+	
+	@Test
+	public void whenInsertAnEmptyCategory_thenError() throws Exception {
+		testInvalidAttributes(CategoryTestType.EMPTY_NAME);
+	}
+	
+	@Test
+	public void whenAddCategoryWithNameShorterThan5Characters_thenError() throws Exception {
+		testInvalidAttributes(CategoryTestType.SHORTER_NAME);
+	}
+	
+	@Test
+	public void whenAddCategoryWithNameLongerThan20Characters_thenError() throws Exception {
+		testInvalidAttributes(CategoryTestType.LONGER_NAME);
+	}
+	
+	@Test
+	public void whenAddCategoryWithExistingName_thenError() throws Exception {
+		testInvalidAttributes(CategoryTestType.ALREADY_EXISTS);
+	}
+	
+	private void testInvalidAttributes(CategoryTestType testType) throws Exception {
+		Category testCategory = getTestCategory();
+		int exceptionCode = 0;
+		String exceptionMessage = "";
+		
+		switch(testType) {
+			case EMPTY_NAME:
+				testCategory.setName("");
+				exceptionCode = categoryCodes.CATEGORY_EMPTY_NAME_CODE;
+				exceptionMessage = categoryCodes.CATEGORY_EMPTY_NAME_MESSAGE;
+				break;
+			case SHORTER_NAME:
+				testCategory.setName("test");
+				exceptionCode = categoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
+				exceptionMessage = categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
+				break;	
+			case LONGER_NAME:
+				testCategory.setName("test_test_test_test_test");
+				exceptionCode = categoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
+				exceptionMessage = categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
+				break;
+			case ALREADY_EXISTS:
+				testCategory.setId(1L);
+				testCategory.setName("sports");
+				exceptionCode = categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE;
+				exceptionMessage = categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE;
+				break;
+			default:
+				break;
+		}		
+		
+		given(service.addCategory(testCategory))
+			.willThrow(ForumExceptionFactory.create(ExceptionType.CATEGORY_EXCEPTION, 
+													exceptionCode, exceptionMessage))
+			.willReturn(null);
+		
+		mock.perform(post(getUri())
+				.with(user(USER).password(PASSWORD).roles(ROLES))
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(testCategory))
+				.accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.responseCode", is(exceptionCode)))
+				.andExpect(jsonPath("$.responseMessage", is(exceptionMessage)))
+				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
+		
+	}
+	
+	private Category getTestCategory() {
+    	return new Category("testing");
+    }
+	
+	private String getUri() {
+		return BASE_URI;
+	}
+	
+	private String getUri(String name) {
+		return BASE_URI + "/" + name;
+	}
+
 }

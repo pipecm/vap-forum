@@ -25,19 +25,7 @@ import com.vanhack.forum.dto.User;
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class UserDataTests {
-	
-	private static final int FIND_BY_NICKNAME 	= 1;
-	private static final int FIND_BY_EMAIL		= 2;
-	
-	private static final int USER_OK		 	= 0;
-	private static final int EMPTY_NICKNAME 	= 1;
-	private static final int EMPTY_EMAIL 		= 2;
-	private static final int EMPTY_PASSWORD 	= 3;
-	private static final int SHORTER_NICKNAME 	= 4;
-	private static final int SHORTER_PASSWORD 	= 5;
-	private static final int LONGER_NICKNAME 	= 6;
-	private static final int INVALID_EMAIL 		= 7;
-	
+		
 	@Autowired
     private TestEntityManager entityManager;
 	
@@ -63,60 +51,61 @@ public class UserDataTests {
 	@Test
 	public void whenUserIsSaved_itMustBeRecordedInDB() {
 		User testUser = getTestUser();
-		userDao.save(testUser);
+		User savedUser = userDao.save(testUser);
 		
-		assertThat(testUser).hasFieldOrPropertyWithValue("nickname", "test_user");
-		assertThat(testUser).hasFieldOrPropertyWithValue("email", "test@vanhack.com");		
+		assertThat(savedUser.getId()).isNotNull();
+		assertThat(savedUser).hasFieldOrPropertyWithValue("nickname", "test_user");
+		assertThat(savedUser).hasFieldOrPropertyWithValue("email", "test@vanhack.com");		
 	}
 	
 	@Test
 	public void whenFindByNickname_thenReturnUser() {
-		testFindUser(FIND_BY_NICKNAME);
+		testFindUser(UserTestType.FIND_BY_NICKNAME);
 	}
 	
 	@Test
 	public void whenFindByEmail_thenReturnUser() {
-		testFindUser(FIND_BY_EMAIL);
+		testFindUser(UserTestType.FIND_BY_EMAIL);
 	}
 	
 	@Test
 	public void whenAllFieldsAreCorrect_thenOk() {
-		testInvalidAttributes(USER_OK);
+		testInvalidAttributes(UserTestType.USER_OK);
 	}
 	
 	@Test
 	public void whenNicknameIsEmpty_thenError() {
-		testInvalidAttributes(EMPTY_NICKNAME);
+		testInvalidAttributes(UserTestType.EMPTY_NICKNAME);
 	}
 	
 	@Test
 	public void whenEmailIsEmpty_thenError() {
-		testInvalidAttributes(EMPTY_EMAIL);
+		testInvalidAttributes(UserTestType.EMPTY_EMAIL);
 	}
 	
 	@Test
 	public void whenPasswordIsEmpty_thenError() {
-		testInvalidAttributes(EMPTY_PASSWORD);
+		testInvalidAttributes(UserTestType.EMPTY_PASSWORD);
 	}
 	
 	@Test
 	public void whenNicknameHasLessThan5Characters_thenError() {
-		testInvalidAttributes(SHORTER_NICKNAME);
+		testInvalidAttributes(UserTestType.SHORTER_NICKNAME);
 	}
 	
 	@Test
 	public void whenPasswordHasLessThan5Characters_thenError() {
-		testInvalidAttributes(SHORTER_PASSWORD);
+		testInvalidAttributes(UserTestType.SHORTER_PASSWORD);
 	}
 	
 	@Test
 	public void whenNicknameHasMoreThan20Characters_thenError() {
-		testInvalidAttributes(LONGER_NICKNAME);
+		testInvalidAttributes(UserTestType.LONGER_NICKNAME);
 	}
 	
 	@Test
 	public void whenEmailIsInvalid_thenError() {
-		testInvalidAttributes(INVALID_EMAIL);
+		testInvalidAttributes(UserTestType.INVALID_EMAIL);
 	}
 	
 	private User getTestUser() {
@@ -127,13 +116,13 @@ public class UserDataTests {
 		return testUser;
 	}
 	
-	private void testFindUser(int attribute) {
+	private void testFindUser(UserTestType testType) {
 		User testUser = getTestUser();
 		User found = null;
 		entityManager.persist(testUser);
 		entityManager.flush();
 		
-		switch(attribute) {
+		switch(testType) {
 			case FIND_BY_NICKNAME:
 				found = userDao.findByNickname(testUser.getNickname());
 				assertThat(found.getNickname()).isEqualTo(testUser.getNickname());
@@ -147,10 +136,10 @@ public class UserDataTests {
 		}
 	}
 	
-	private void testInvalidAttributes(int attribute) {
+	private void testInvalidAttributes(UserTestType testType) {
 		User testUser = getTestUser();
 		
-		switch(attribute) {
+		switch(testType) {
 			case EMPTY_NICKNAME:
 				testUser.setNickname("");
 				break;
@@ -181,7 +170,7 @@ public class UserDataTests {
     		log.info(violation.getMessage());
     	}
 		
-		if(attribute == USER_OK) {
+		if(testType == UserTestType.USER_OK) {
 			assertThat(violations).isEmpty();
 		} else {
 			assertThat(violations).isNotEmpty();

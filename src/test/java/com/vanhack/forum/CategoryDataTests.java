@@ -52,10 +52,10 @@ public class CategoryDataTests {
 	@Test
 	public void whenCategoryIsSaved_itMustBeRecordedInDB() {
 		Category games = new Category("games");
-		Category newCategory = categoryDao.save(games);
+		Category savedCategory = categoryDao.save(games);
 		
-		assertThat(newCategory.getId()).isNotNull();
-		assertThat(newCategory).hasFieldOrPropertyWithValue("name", games.getName());
+		assertThat(savedCategory.getId()).isNotNull();
+		assertThat(savedCategory).hasFieldOrPropertyWithValue("name", games.getName());
 	}
 	
     @Test
