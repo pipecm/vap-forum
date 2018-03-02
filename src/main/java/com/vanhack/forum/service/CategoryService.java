@@ -28,9 +28,6 @@ public class CategoryService {
 	@Autowired
 	private CategoryDAO categoryDao;
 	
-	@Autowired
-	private CategoryCodes categoryCodes;
-	
 	private Validator validator;
 	
 	private static final Logger log = LogManager.getLogger(CategoryService.class);
@@ -46,8 +43,8 @@ public class CategoryService {
 			try {
 				savedCategory = categoryDao.save(category);
 			} catch(Exception cause) {
-				throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
-										categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
+				throwCategoryException(CategoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
+										CategoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
 										cause);
 			}
 		}
@@ -63,8 +60,12 @@ public class CategoryService {
 		return categoryDao.findOne(id);
 	}
 	
-	public Category findByName(String name) {
-		return categoryDao.findByName(name);
+//	public Category findByName(String name) {
+//		return categoryDao.findByName(name);
+//	}
+	
+	public List<Category> findByNameContaining(String name) {
+		return categoryDao.findByNameContaining(name);
 	}
 	
 	public Category updateCategory(Category category) throws ForumException {
@@ -73,8 +74,8 @@ public class CategoryService {
 			try {
 				savedCategory = categoryDao.save(category);
 			} catch(Exception cause) {
-				throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
-										categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
+				throwCategoryException(CategoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
+										CategoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
 										cause);
 			}
 		}
@@ -88,25 +89,25 @@ public class CategoryService {
 			categoryDao.delete(category);
 		} catch(Exception cause) {
 			log.error(cause.getMessage(), cause);
-			throwCategoryException(categoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
-									categoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
+			throwCategoryException(CategoryCodes.CATEGORY_UNEXPECTED_ERROR_CODE,
+									CategoryCodes.CATEGORY_UNEXPECTED_ERROR_MESSAGE,
 									cause);
 		}
-		return categoryCodes.CATEGORY_SUCCESS_CODE;
+		return CategoryCodes.CATEGORY_SUCCESS_CODE;
 	}
 	
 	private boolean validateCategory(Category category) throws ForumException {
 		if(category.getName() == null || category.getName().equals("")) {
-			throwCategoryException(categoryCodes.CATEGORY_EMPTY_NAME_CODE,
-									categoryCodes.CATEGORY_EMPTY_NAME_MESSAGE);
+			throwCategoryException(CategoryCodes.CATEGORY_EMPTY_NAME_CODE,
+									CategoryCodes.CATEGORY_EMPTY_NAME_MESSAGE);
 		} else if(!isNameAvailable(category)) {
-			throwCategoryException(categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE,
-									categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE);
+			throwCategoryException(CategoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE,
+									CategoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE);
 		} else {
 			Set<ConstraintViolation<Category>> violations = validator.validate(category);
 			if(!violations.isEmpty()) {
-				throwCategoryException(categoryCodes.CATEGORY_VALIDATION_ERROR_CODE,
-										categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE
+				throwCategoryException(CategoryCodes.CATEGORY_VALIDATION_ERROR_CODE,
+										CategoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE
 										+ ": " + getValidationMessages(violations));
 			}
 		}

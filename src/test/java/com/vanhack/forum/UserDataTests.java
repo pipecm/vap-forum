@@ -124,7 +124,7 @@ public class UserDataTests {
 		
 		switch(testType) {
 			case FIND_BY_NICKNAME:
-				found = userDao.findByNickname(testUser.getNickname());
+				found = userDao.findByNicknameContaining(testUser.getNickname()).get(0);
 				assertThat(found.getNickname()).isEqualTo(testUser.getNickname());
 				break;
 			case FIND_BY_EMAIL:

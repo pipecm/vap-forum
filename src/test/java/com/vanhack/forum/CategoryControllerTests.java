@@ -1,5 +1,6 @@
 package com.vanhack.forum;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
@@ -56,9 +57,6 @@ public class CategoryControllerTests {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	@Autowired
-	private CategoryCodes categoryCodes;
-	
 	private static final String BASE_URI = "/api/category";
 	private static final String USER = "pipecm";
 	private static final String PASSWORD = "vanhack";
@@ -83,8 +81,8 @@ public class CategoryControllerTests {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isNoContent())
-				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_NOT_FOUND_CODE)))
-				.andExpect(jsonPath("$.responseMessage", is(categoryCodes.CATEGORY_NOT_FOUND_MESSAGE)))
+				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_NOT_FOUND_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(CategoryCodes.CATEGORY_NOT_FOUND_MESSAGE)))
 				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
 		
 	}
@@ -103,8 +101,8 @@ public class CategoryControllerTests {
 				.contentType(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
-				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categoriesList.size()))))
+				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(CategoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categoriesList.size()))))
 				.andExpect(jsonPath("$.responseContent", hasSize(2)))
 				.andExpect(jsonPath("$.responseContent[0].name", is(music.getName())))
 				.andExpect(jsonPath("$.responseContent[1].name", is(games.getName())));
@@ -112,36 +110,41 @@ public class CategoryControllerTests {
 	}
 	
 	@Test
-	public void whenFindByName_andCategoryExists_thenReturnJsonCategory() throws Exception {
-		String name = "random";
-		Category random = new Category(name);
+	public void whenFindByName_andCategoriesFound_thenReturnJsonCategoriesList() throws Exception {
+		String name = "test";
+		Category first = new Category("first test");
+		Category second = new Category("second test");
 		
-		given(service.findByName(name)).willReturn(random);
+		given(service.findByNameContaining(name)).willReturn(Arrays.asList(first, second));
 		
-		mock.perform(get(getUri(name))
+		mock.perform(get("/api/category/find")
 				.with(user(USER).password(PASSWORD).roles(ROLES))
-				.contentType(MediaType.APPLICATION_JSON))
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("name", name))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
-				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name))))
-				.andExpect(jsonPath("$.responseContent", hasSize(1)))
-				.andExpect(jsonPath("$.responseContent[0].name", is(random.getName())));
+				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(CategoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name))))
+				.andExpect(jsonPath("$.responseContent", hasSize(2)))
+				.andExpect(jsonPath("$.responseContent[0].name", containsString(name)))
+				.andExpect(jsonPath("$.responseContent[1].name", containsString(name)));
 	}
 	
 	@Test
 	public void whenFindByName_andNotExists_thenStatusNotFound() throws Exception {
 		String name = "not_found";
+		List<Category> emptyList = new ArrayList<Category>();
 		
-		given(service.findByName(name)).willReturn(null);
+		given(service.findByNameContaining(name)).willReturn(emptyList);
 		
-		mock.perform(get(getUri(name))
+		mock.perform(get("/api/category/find")
 				.with(user(USER).password(PASSWORD).roles(ROLES))
-				.contentType(MediaType.APPLICATION_JSON))
+				.contentType(MediaType.APPLICATION_JSON)
+				.param("name", name))
 				.andDo(print())
 				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_NAME_NOT_FOUND_CODE)))
-				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(categoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name))))
+				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_NAME_NOT_FOUND_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(CategoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name))))
 				.andExpect(jsonPath("$.responseContent", is(IsNull.nullValue())));
 	}
 	
@@ -162,8 +165,8 @@ public class CategoryControllerTests {
 				.accept(MediaType.APPLICATION_JSON))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.responseCode", is(categoryCodes.CATEGORY_SUCCESS_CODE)))
-				.andExpect(jsonPath("$.responseMessage", is(categoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE)))
+				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_SUCCESS_CODE)))
+				.andExpect(jsonPath("$.responseMessage", is(CategoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE)))
 				.andExpect(jsonPath("$.responseContent", hasSize(1)))
 				.andExpect(jsonPath("$.responseContent[0].name", is(health.getName())));
 
@@ -197,24 +200,24 @@ public class CategoryControllerTests {
 		switch(testType) {
 			case EMPTY_NAME:
 				testCategory.setName("");
-				exceptionCode = categoryCodes.CATEGORY_EMPTY_NAME_CODE;
-				exceptionMessage = categoryCodes.CATEGORY_EMPTY_NAME_MESSAGE;
+				exceptionCode = CategoryCodes.CATEGORY_EMPTY_NAME_CODE;
+				exceptionMessage = CategoryCodes.CATEGORY_EMPTY_NAME_MESSAGE;
 				break;
 			case SHORTER_NAME:
 				testCategory.setName("test");
-				exceptionCode = categoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
-				exceptionMessage = categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
+				exceptionCode = CategoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
+				exceptionMessage = CategoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
 				break;	
 			case LONGER_NAME:
 				testCategory.setName("test_test_test_test_test");
-				exceptionCode = categoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
-				exceptionMessage = categoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
+				exceptionCode = CategoryCodes.CATEGORY_VALIDATION_ERROR_CODE;
+				exceptionMessage = CategoryCodes.CATEGORY_VALIDATION_ERROR_MESSAGE;
 				break;
 			case ALREADY_EXISTS:
 				testCategory.setId(1L);
 				testCategory.setName("sports");
-				exceptionCode = categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE;
-				exceptionMessage = categoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE;
+				exceptionCode = CategoryCodes.CATEGORY_NAME_ALREADY_EXISTS_CODE;
+				exceptionMessage = CategoryCodes.CATEGORY_NAME_ALREADY_EXISTS_MESSAGE;
 				break;
 			default:
 				break;
@@ -247,8 +250,8 @@ public class CategoryControllerTests {
 		return BASE_URI;
 	}
 	
-	private String getUri(String name) {
-		return BASE_URI + "/" + name;
-	}
+//	private String getUri(String name) {
+//		return BASE_URI + "/" + name;
+//	}
 
 }

@@ -48,6 +48,8 @@ public class CategoryServiceTests {
 	public void setUp() {
 		Category sports = new Category("sports");
 		Category music = new Category("music");
+		Category firstTest = new Category("first test");
+		Category secondTest = new Category("second test");
 		
 		Category testing = new Category();
 		testing.setId(1L);
@@ -55,8 +57,8 @@ public class CategoryServiceTests {
 		
 		List<Category> categoryList = Arrays.asList(sports, music);
 		
-		Mockito.when(categoryDao.findByName(sports.getName()))
-			.thenReturn(sports);
+		Mockito.when(categoryDao.findByNameContaining("test"))
+			.thenReturn(Arrays.asList(firstTest, secondTest));
 		Mockito.when(categoryDao.findAll())
 			.thenReturn(categoryList);
 		Mockito.when(categoryDao.checkName(1L, "sports"))
@@ -72,18 +74,23 @@ public class CategoryServiceTests {
 	 
 	@Test
 	public void whenFindByName_thenReturnCategory() {
-		String name = "sports";
-		Category found = categoryService.findByName(name);
+		String name = "test";
+		List<Category> categoriesFound = categoryService.findByNameContaining(name);
 	    	
-		assertThat(found.getName()).isEqualTo(name);
+		assertThat(categoriesFound).isNotEmpty();
+		assertThat(categoriesFound.size()).isEqualTo(2);
+		
+		for(Category found : categoriesFound) {
+			assertThat(found.getName()).contains(name);
+		}
 	}
 	
 	@Test
 	public void whenFindingCategoryNotExists_thenError() {
 		String name = "leisure";
-		Category found = categoryService.findByName(name);
+		List<Category> found = categoryService.findByNameContaining(name);
 	    	
-		assertThat(found).isNull();
+		assertThat(found).isEmpty();
 	}
 	
 	@Test

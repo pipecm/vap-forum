@@ -59,14 +59,28 @@ public class CategoryDataTests {
 	}
 	
     @Test
-    public void whenFindByName_thenReturnCategory() {
-    	Category music = new Category("music");
-    	entityManager.persist(music);
+    public void whenFindByName_andCategoriesFound_thenReturnCategoriesList() {
+    	String name = "music";
+    	Category rock = new Category("rock music");
+    	Category classic = new Category("classic music");
+    	entityManager.persist(rock);
+    	entityManager.persist(classic);
     	entityManager.flush();
 
-    	Category found = categoryDao.findByName(music.getName());
+    	List<Category> categoriesFound = categoryDao.findByNameContaining(name);
     	
-    	assertThat(found.getName()).isEqualTo(music.getName());
+    	assertThat(categoriesFound).isNotEmpty();
+    	assertThat(categoriesFound.size()).isEqualTo(2);
+    	for(Category found : categoriesFound) {
+			assertThat(found.getName()).contains(name);
+		}
+    }
+    
+    @Test
+    public void whenFindByName_andCategoriesNotFound_thenReturnEmptyList() {
+    	String name = "history";
+    	List<Category> categoriesFound = categoryDao.findByNameContaining(name);
+    	assertThat(categoriesFound).isEmpty();
     }
     
     @Test

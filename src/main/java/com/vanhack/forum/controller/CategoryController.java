@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,46 +37,43 @@ public class CategoryController {
 	@Autowired
 	private CategoryService categoryService;
 	
-	@Autowired
-	private CategoryCodes categoryCodes;
-	
 	@GetMapping(path = CategoryConstants.CATEGORY_GET_ALL_ENDPOINT)
 	public @ResponseBody ResponseEntity<ForumResponse> getAllCategories() {
 		ForumResponse response = null; 
 		log.info("Fetching all categories");
 		List<Category> categories = categoryService.getAllCategories();
 		if(categories.isEmpty()) {
-			log.info(categoryCodes.CATEGORY_NOT_FOUND_MESSAGE);
+			log.info(CategoryCodes.CATEGORY_NOT_FOUND_MESSAGE);
 			response = ForumResponseFactory.create(ResponseType.CATEGORY_RESPONSE, 
-													categoryCodes.CATEGORY_NOT_FOUND_CODE, 
-													categoryCodes.CATEGORY_NOT_FOUND_MESSAGE);
+													CategoryCodes.CATEGORY_NOT_FOUND_CODE, 
+													CategoryCodes.CATEGORY_NOT_FOUND_MESSAGE);
 			return new ResponseEntity<ForumResponse>(response, HttpStatus.NO_CONTENT);
 		}
-		log.info(MessageFormat.format(categoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categories.size()));
+		log.info(MessageFormat.format(CategoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categories.size()));
 		response = ForumResponseFactory.create(ResponseType.CATEGORY_RESPONSE, 
-												categoryCodes.CATEGORY_SUCCESS_CODE, 
-												MessageFormat.format(categoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categories.size()));
+												CategoryCodes.CATEGORY_SUCCESS_CODE, 
+												MessageFormat.format(CategoryCodes.CATEGORY_FIND_ALL_SUCCESS_MESSAGE, categories.size()));
 		response.setResponseContent(categories);
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
 	@GetMapping(path = CategoryConstants.CATEGORY_GET_BY_NAME_ENDPOINT)
-	public ResponseEntity<ForumResponse> findCategoryByName(@PathVariable("name") String name) {
+	public @ResponseBody ResponseEntity<ForumResponse> findCategoriesByName(@RequestParam("name") String name) {
 		ForumResponse response = null;
 		log.info("Fetching category with name: " + name);
-		Category category = categoryService.findByName(name);
-		if(category == null) {
-			log.info(MessageFormat.format(categoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name));
+		List<Category> categories = categoryService.findByNameContaining(name);
+		if(categories.isEmpty() || categories == null) {
+			log.info(MessageFormat.format(CategoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name));
 			response = ForumResponseFactory.create(ResponseType.CATEGORY_RESPONSE, 
-													categoryCodes.CATEGORY_NAME_NOT_FOUND_CODE, 
-													MessageFormat.format(categoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name));
+													CategoryCodes.CATEGORY_NAME_NOT_FOUND_CODE, 
+													MessageFormat.format(CategoryCodes.CATEGORY_NAME_NOT_FOUND_MESSAGE, name));
 			return new ResponseEntity<ForumResponse>(response, HttpStatus.NOT_FOUND);
 		}
-		log.info(MessageFormat.format(categoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name));
+		log.info(MessageFormat.format(CategoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name));
 		response = ForumResponseFactory.create(ResponseType.CATEGORY_RESPONSE, 
-												categoryCodes.CATEGORY_SUCCESS_CODE, 
-												MessageFormat.format(categoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name));
-		response.setResponseContent(Arrays.asList(category));
+												CategoryCodes.CATEGORY_SUCCESS_CODE, 
+												MessageFormat.format(CategoryCodes.CATEGORY_FIND_BY_NAME_SUCCESS_MESSAGE, name));
+		response.setResponseContent(categories);
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	
@@ -86,8 +84,8 @@ public class CategoryController {
 			Category newCategory = categoryService.addCategory(category);
 			if(newCategory != null) {
 				response = ForumResponseFactory.create(ResponseType.CATEGORY_RESPONSE, 
-															categoryCodes.CATEGORY_SUCCESS_CODE, 
-															categoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE);
+															CategoryCodes.CATEGORY_SUCCESS_CODE, 
+															CategoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE);
 				response.setResponseContent(Arrays.asList(newCategory));
 			}
 		} catch(ForumException exception) {

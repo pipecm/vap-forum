@@ -42,7 +42,7 @@ public class LoginController {
 	}
 	
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
-	public ModelAndView createNewUser(@Valid User user, BindingResult bindingResult) {
+	public ModelAndView createNewUser(@Valid User user, BindingResult bindingResult) throws ForumException {
 		ModelAndView modelAndView = new ModelAndView();
 		User userExists = userService.findByEmail(user.getEmail());
 		if (userExists != null) {
@@ -67,7 +67,7 @@ public class LoginController {
 	}
 	
 	@RequestMapping(value = "/home", method = RequestMethod.GET)
-	public ModelAndView home(){
+	public ModelAndView home() throws ForumException{
 		ModelAndView modelAndView = new ModelAndView();
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User user = userService.findByEmail(auth.getName());

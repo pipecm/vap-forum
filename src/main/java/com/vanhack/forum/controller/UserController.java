@@ -1,7 +1,6 @@
 package com.vanhack.forum.controller;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -66,22 +65,22 @@ public class UserController {
 	}
 	
 	@GetMapping(path = "/user/find")
-	public @ResponseBody ResponseEntity<ForumResponse> findUserByNickname(@RequestParam("nickname") String nickname) {
+	public @ResponseBody ResponseEntity<ForumResponse> findUsersByNickname(@RequestParam("nickname") String nickname) {
 		ForumResponse response = null;
-		log.info("Fetching User with nickname {}", nickname);
-		User user = userService.findByNickname(nickname);
-		if(user == null) {
-			log.error("User with nickname {} not found", nickname);
+		log.info("Fetching User with nickname containing {}", nickname);
+		List<User> users = userService.findByNicknameContaining(nickname);
+		if(users.isEmpty() || users == null) {
 			response = ForumResponseFactory.create(ResponseType.USER_RESPONSE, 
 													UserCodes.USER_NICKNAME_NOT_FOUND_CODE, 
-													UserCodes.USER_NICKNAME_NOT_FOUND_MESSAGE);
+													MessageFormat.format(UserCodes.USER_NICKNAME_NOT_FOUND_MESSAGE, nickname));
+			log.debug(response);
 			return new ResponseEntity<ForumResponse>(response, HttpStatus.NOT_FOUND);	
 		}
-		log.info("User found: " + user.toString());
 		response = ForumResponseFactory.create(ResponseType.USER_RESPONSE, 
 												UserCodes.USER_SUCCESS_CODE, 
-												MessageFormat.format(UserCodes.USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE, nickname));
-		response.setResponseContent(Arrays.asList(user));
+												MessageFormat.format(UserCodes.USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE, users.size(), nickname));
+		response.setResponseContent(users);
+		log.debug(response);
 		return new ResponseEntity<ForumResponse>(response, HttpStatus.OK);
 	}
 	

@@ -111,7 +111,7 @@ public class UserControllerTests {
 		myUser.setEmail("pipecm@gmail.com");
 		
 		String keyword = "pipecm";
-		given(service.findByNickname(keyword)).willReturn(myUser);
+		given(service.findByNicknameContaining(keyword)).willReturn(Arrays.asList(myUser));
 		
 		mock.perform(get("/api/user/find")
 			.with(user(TestConstants.USER).password(TestConstants.PASSWORD).roles(TestConstants.ROLES))

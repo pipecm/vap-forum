@@ -45,4 +45,10 @@ public abstract class ForumResponse {
 		this.responseContent = responseContent;
 	}
 
+	@Override
+	public String toString() {
+		return "ForumResponse [responseCode=" + responseCode + ", responseMessage=" + responseMessage
+				+ ", responseContent=" + responseContent + "]";
+	}
+
 }
