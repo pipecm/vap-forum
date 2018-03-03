@@ -49,6 +49,22 @@ public class UserDataTests {
 	}
 	
 	@Test
+	public void whenTableIsNotEmpty_thenReturnAllUsers() {
+		User firstUser = getTestUser();
+		User secondUser = getTestUser();
+		firstUser.setNickname("first_user");
+		secondUser.setNickname("second_user");
+		entityManager.persist(firstUser);
+		entityManager.persist(secondUser);
+		entityManager.flush();
+		
+		List<User> users = userDao.findAll();
+		
+		assertThat(users).isNotEmpty();
+		assertThat(users.size()).isEqualTo(2);
+	}
+	
+	@Test
 	public void whenUserIsSaved_itMustBeRecordedInDB() {
 		User testUser = getTestUser();
 		User savedUser = userDao.save(testUser);
@@ -59,13 +75,64 @@ public class UserDataTests {
 	}
 	
 	@Test
-	public void whenFindByNickname_thenReturnUser() {
-		testFindUser(UserTestType.FIND_BY_NICKNAME);
+	public void whenUserIsUpdated_itMustBeRecordedInDB() {
+		User testUser = getTestUser();
+		User savedUser = userDao.save(testUser);
+		
+		assertThat(savedUser.getId()).isNotNull();
+		assertThat(savedUser).hasFieldOrPropertyWithValue("nickname", "test_user");
+		assertThat(savedUser).hasFieldOrPropertyWithValue("email", "test@vanhack.com");	
+		
+		savedUser.setNickname("test_updated");
+		savedUser.setEmail("updated@vanhack.com");
+		
+		User updatedUser = userDao.save(savedUser);
+		assertThat(updatedUser.getId()).isEqualTo(savedUser.getId());
+		assertThat(updatedUser).hasFieldOrPropertyWithValue("nickname", "test_updated");
+		assertThat(updatedUser).hasFieldOrPropertyWithValue("email", "updated@vanhack.com");	
+	}
+	
+	@Test
+	public void whenUserIsDeleted_itMustBeDeletedFromDB() {
+		User testUser = getTestUser();
+		User savedUser = userDao.save(testUser);
+		
+		assertThat(savedUser.getId()).isNotNull();
+		assertThat(savedUser).hasFieldOrPropertyWithValue("nickname", "test_user");
+		assertThat(savedUser).hasFieldOrPropertyWithValue("email", "test@vanhack.com");	
+		
+		long deletedUserId = savedUser.getId();
+		userDao.delete(deletedUserId);
+		assertThat(userDao.findById(deletedUserId)).isNull();
+	}
+	
+	@Test
+	public void whenFindByNickname_thenReturnUserList() {
+		String keyword = "test";
+		User firstUser = getTestUser();
+		User secondUser = getTestUser();
+		firstUser.setNickname("test_one");
+		secondUser.setNickname("test_two");
+		entityManager.persist(firstUser);
+		entityManager.persist(secondUser);
+		entityManager.flush();
+
+		List<User> usersFound = userDao.findByNicknameContaining(keyword);
+		
+		assertThat(usersFound).isNotEmpty();
+		for(User found : usersFound) {
+			assertThat(found.getNickname()).contains(keyword);
+		}
 	}
 	
 	@Test
 	public void whenFindByEmail_thenReturnUser() {
-		testFindUser(UserTestType.FIND_BY_EMAIL);
+		User testUser = getTestUser();
+		entityManager.persist(testUser);
+		entityManager.flush();
+	
+		User found = userDao.findByEmail(testUser.getEmail());
+		assertThat(found.getEmail()).isEqualTo(testUser.getEmail());	
 	}
 	
 	@Test
@@ -114,26 +181,6 @@ public class UserDataTests {
 		testUser.setEmail("test@vanhack.com");
 		testUser.setPassword("testuser");
 		return testUser;
-	}
-	
-	private void testFindUser(UserTestType testType) {
-		User testUser = getTestUser();
-		User found = null;
-		entityManager.persist(testUser);
-		entityManager.flush();
-		
-		switch(testType) {
-			case FIND_BY_NICKNAME:
-				found = userDao.findByNicknameContaining(testUser.getNickname()).get(0);
-				assertThat(found.getNickname()).isEqualTo(testUser.getNickname());
-				break;
-			case FIND_BY_EMAIL:
-				found = userDao.findByEmail(testUser.getEmail());
-				assertThat(found.getEmail()).isEqualTo(testUser.getEmail());
-				break;
-			default:
-				break;
-		}
 	}
 	
 	private void testInvalidAttributes(UserTestType testType) {

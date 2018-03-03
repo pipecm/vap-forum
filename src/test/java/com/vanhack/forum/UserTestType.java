@@ -1,8 +1,6 @@
 package com.vanhack.forum;
 
 public enum UserTestType {
-	FIND_BY_NICKNAME,
-	FIND_BY_EMAIL,
 	USER_OK,
 	EMPTY_NICKNAME,
 	EMPTY_EMAIL,

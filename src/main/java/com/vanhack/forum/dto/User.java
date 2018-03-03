@@ -23,15 +23,15 @@ public class User implements Serializable {
 	private Long id;
 	
 	@Length(min = 5, max = 20, message = "*Your nickname must have between 5 and 20 characters")
-	@NotEmpty(message = "*Please provide a nickname")
+	@NotEmpty(message = "Please provide a nickname")
 	private String nickname;
 	
-	@Email(message = "*Please provide a valid Email")
-	@NotEmpty(message = "*Please provide an email")
+	@Email(message = "Please provide a valid Email")
+	@NotEmpty(message = "Please provide an email")
 	private String email;
 	
-	@Length(min = 5, message = "*Your password must have at least 5 characters")
-	@NotEmpty(message = "*Please provide a password")
+	@Length(min = 5, message = "Your password must have at least 5 characters")
+	@NotEmpty(message = "Please provide a password")
 	@Transient
 	private String password;
 

@@ -60,6 +60,12 @@ public class UserServiceTests {
 		
 		User testUser = getTestUser();
 		
+		User updatedUser = new User();
+		updatedUser.setId(1L);
+		updatedUser.setNickname("test_updated");
+		updatedUser.setEmail("updated@vanhack.com");
+		updatedUser.setPassword("testuser");
+		
 		List<User> allUsers = Arrays.asList(firstUser, secondUser, thirdUser);
 		List<User> foundUsers = Arrays.asList(firstUser, secondUser);
 		
@@ -71,6 +77,10 @@ public class UserServiceTests {
 			.thenReturn(allUsers);
 		Mockito.when(userDao.save(testUser))
 			.thenReturn(firstUser);
+		Mockito.when(userDao.save(updatedUser))
+			.thenReturn(updatedUser);
+		Mockito.when(userDao.findById(1L))
+			.thenReturn(null);
 	}
 	
 	@Test
@@ -150,6 +160,42 @@ public class UserServiceTests {
 	@Test
 	public void whenEmailIsInvalid_thenError() {
 		testInvalidAttributes(UserTestType.INVALID_EMAIL);
+	}
+	
+	@Test
+	public void whenUserIsUpdated_thenChangesAreSaved() throws ForumException {
+		User testUser = getTestUser();
+		User savedUser = userService.addUser(testUser);
+		
+		assertThat(savedUser).isNotNull();
+		assertThat(savedUser.getId()).isNotNull();
+		assertThat(savedUser.getNickname()).isEqualTo(testUser.getNickname());
+		assertThat(savedUser.getEmail()).isEqualTo(testUser.getEmail());
+		
+		savedUser.setNickname("test_updated");
+		savedUser.setEmail("updated@vanhack.com");
+		
+		User updatedUser = userService.updateUser(savedUser);
+		
+		assertThat(updatedUser).isNotNull();
+		assertThat(updatedUser.getId()).isEqualTo(savedUser.getId());
+		assertThat(updatedUser.getNickname()).isEqualTo(savedUser.getNickname());
+		assertThat(updatedUser.getEmail()).isEqualTo(savedUser.getEmail());
+	}
+	
+	@Test
+	public void whenUserIsDeleted_thenUserIsRemovedFromDB() throws ForumException {
+		User testUser = getTestUser();
+		User savedUser = userService.addUser(testUser);
+		long savedUserId = savedUser.getId();
+		
+		assertThat(savedUser).isNotNull();
+		assertThat(savedUser.getId()).isNotNull();
+		assertThat(savedUser.getNickname()).isEqualTo(testUser.getNickname());
+		assertThat(savedUser.getEmail()).isEqualTo(testUser.getEmail());
+		
+		userService.deleteUser(savedUserId);
+		assertThat(userService.findById(savedUserId)).isNull();
 	}
 	
 	private void testInvalidAttributes(UserTestType testType) {	

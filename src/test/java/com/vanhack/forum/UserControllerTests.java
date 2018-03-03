@@ -109,9 +109,10 @@ public class UserControllerTests {
 		User myUser = new User();
 		myUser.setNickname("pipecm");
 		myUser.setEmail("pipecm@gmail.com");
+		List<User> usersFound = Arrays.asList(myUser);
 		
 		String keyword = "pipecm";
-		given(service.findByNicknameContaining(keyword)).willReturn(Arrays.asList(myUser));
+		given(service.findByNicknameContaining(keyword)).willReturn(usersFound);
 		
 		mock.perform(get("/api/user/find")
 			.with(user(TestConstants.USER).password(TestConstants.PASSWORD).roles(TestConstants.ROLES))
@@ -120,7 +121,10 @@ public class UserControllerTests {
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.responseCode", is(UserCodes.USER_SUCCESS_CODE)))
-			.andExpect(jsonPath("$.responseMessage", is(MessageFormat.format(UserCodes.USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE, keyword))))
+			.andExpect(jsonPath("$.responseMessage", 
+					is(MessageFormat.format(UserCodes.USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE, 
+											usersFound.size(), 
+											keyword))))
 			.andExpect(jsonPath("$.responseContent", hasSize(1)))
 			.andExpect(jsonPath("$.responseContent[0].nickname", is(myUser.getNickname())))
 			.andExpect(jsonPath("$.responseContent[0].email", is(myUser.getEmail())));
