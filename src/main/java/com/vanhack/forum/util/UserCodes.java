@@ -10,6 +10,9 @@ public class UserCodes {
 	
 	public static int USER_SUCCESS_CODE;
 	public static String USER_SUCCESS_MESSAGE;
+	public static String USER_INSERT_SUCCESS_MESSAGE;
+	public static String USER_UPDATE_SUCCESS_MESSAGE;
+	public static String USER_DELETE_SUCCESS_MESSAGE;
 	public static String USER_FIND_ALL_SUCCESS_MESSAGE;
 	public static String USER_FIND_BY_NICKNAME_SUCCESS_MESSAGE;
 	public static String USER_FIND_BY_EMAIL_SUCCESS_MESSAGE;
@@ -39,6 +42,8 @@ public class UserCodes {
 	public static String USER_UNEXPECTED_ERROR_MESSAGE;
 	public static int USER_VALIDATION_ERROR_CODE;
 	public static String USER_VALIDATION_ERROR_MESSAGE;
+	public static int USER_NULL_CODE;
+	public static String USER_NULL_MESSAGE;
 	
 	@Value("${user.success.code}")
 	public void setSuccessCode(int code) {
@@ -50,8 +55,23 @@ public class UserCodes {
 		USER_SUCCESS_MESSAGE = message;
 	}
 	
+	@Value("${user.insert.success.message}")
+	public void setUserInsertSuccessMessage(String message) {
+		USER_INSERT_SUCCESS_MESSAGE = message;
+	}
+	
+	@Value("${user.update.success.message}")
+	public void setUserUpdateSuccessMessage(String message) {
+		USER_UPDATE_SUCCESS_MESSAGE = message;
+	}
+	
+	@Value("${user.delete.success.message}")
+	public void setUserDeleteSuccessMessage(String message) {
+		USER_DELETE_SUCCESS_MESSAGE = message;
+	}
+	
 	@Value("${user.findall.success.message}")
-	public void setFindAllSuccessMessage(String message) {
+	public void setUserFindAllSuccessMessage(String message) {
 		USER_FIND_ALL_SUCCESS_MESSAGE = message;
 	}
 	
@@ -183,6 +203,16 @@ public class UserCodes {
 	@Value("${user.validation.error.message}")
 	public void setUserValidationErrorMessage(String message) {
 		USER_VALIDATION_ERROR_MESSAGE = message;
+	}
+	
+	@Value("${user.null.code}")
+	public void setUserNullCode(int code) {
+		USER_NULL_CODE = code;
+	}
+	
+	@Value("${user.null.message}")
+	public void setUserNullMessage(String message) {
+		USER_NULL_MESSAGE = message;
 	}
 	
 	@Value("${user.unexpected.code}")

@@ -103,12 +103,8 @@ public class CategoryDataTests {
     	testInvalidAttributes(CategoryTestType.LONGER_NAME);
     }
     
-    private Category getTestCategory() {
-    	return new Category("Testing");
-    }
-    
     private void testInvalidAttributes(CategoryTestType testType) {
-    	Category testCategory = getTestCategory();
+    	Category testCategory = TestObjects.getTestCategory();
     	
     	switch(testType) {
     		case EMPTY_NAME:

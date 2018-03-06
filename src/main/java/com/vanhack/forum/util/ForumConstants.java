@@ -5,8 +5,10 @@ public class ForumConstants {
 	public static final String API_ENDPOINT = "/api";
 		
 	public static class UserConstants {
+		public static final String USER_TABLE_NAME = "vap_forum_user";
 		public static final int USER_NICKNAME_MIN_LENGTH = 5;
 		public static final int USER_NICKNAME_MAX_LENGTH = 20;
+		public static final int USER_PASSWORD_MIN_LENGTH = 5;
 		public static final String USER_GET_ALL_ENDPOINT = "/user";
 		public static final String USER_GET_BY_NICKNAME_ENDPOINT = "/user/{nickname}";
 		public static final String USER_GET_BY_EMAIL_ENDPOINT = "/user/{email}";
@@ -16,6 +18,9 @@ public class ForumConstants {
 	}
 	
 	public static class CategoryConstants {
+		public static final String CATEGORY_TABLE_NAME = "vap_forum_category";
+		public static final int CATEGORY_NAME_MIN_LENGTH = 5;
+		public static final int CATEGORY_NAME_MAX_LENGTH = 20;
 		public static final String CATEGORY_GET_ALL_ENDPOINT = "/category";
 		public static final String CATEGORY_GET_BY_NAME_ENDPOINT = "/category/find"; //"/category/{name}";
 		public static final String CATEGORY_ADD_ENDPOINT = "/category";

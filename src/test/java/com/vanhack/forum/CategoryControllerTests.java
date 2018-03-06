@@ -168,6 +168,7 @@ public class CategoryControllerTests {
 				.andExpect(jsonPath("$.responseCode", is(CategoryCodes.CATEGORY_SUCCESS_CODE)))
 				.andExpect(jsonPath("$.responseMessage", is(CategoryCodes.CATEGORY_INSERT_SUCCESS_MESSAGE)))
 				.andExpect(jsonPath("$.responseContent", hasSize(1)))
+				.andExpect(jsonPath("$.responseContent[0].id", is(IsNull.notNullValue())))
 				.andExpect(jsonPath("$.responseContent[0].name", is(health.getName())));
 
 	}
@@ -193,7 +194,7 @@ public class CategoryControllerTests {
 	}
 	
 	private void testInvalidAttributes(CategoryTestType testType) throws Exception {
-		Category testCategory = getTestCategory();
+		Category testCategory = TestObjects.getTestCategory();
 		int exceptionCode = 0;
 		String exceptionMessage = "";
 		
@@ -242,9 +243,15 @@ public class CategoryControllerTests {
 		
 	}
 	
-	private Category getTestCategory() {
-    	return new Category("testing");
-    }
+	@Test
+	public void whenCategoryIsUpdated_thenReturnedAnUpdatedJson() throws Exception {
+		
+	}
+	
+	@Test
+	public void whenCategoryIsDeleted_thenUserIsRemoved() throws Exception {
+		
+	}
 	
 	private String getUri() {
 		return BASE_URI;

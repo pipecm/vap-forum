@@ -1,14 +1,10 @@
 package com.vanhack.forum.service;
 
+import java.text.MessageFormat;
 import java.util.List;
-import java.util.Set;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +16,7 @@ import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.exception.ForumExceptionFactory;
 import com.vanhack.forum.exception.ForumExceptionFactory.ExceptionType;
+import com.vanhack.forum.util.ForumConstants.UserConstants;
 import com.vanhack.forum.util.UserCodes;
 
 @Service
@@ -29,16 +26,9 @@ public class UserService {
 	@Autowired
 	private UserDAO userDao;
 	
-	private Validator validator;
-	
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-	
-	public UserService() {
-		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        this.validator = factory.getValidator();
-	}
-	
+		
 	public User addUser(User user) throws ForumException {
 		User savedUser = null;
 		if(validateUser(user)) {
@@ -100,7 +90,10 @@ public class UserService {
 	}
 	
 	private boolean validateUser(User user) throws ForumException {
-		if(user.getNickname() == null || user.getNickname().equals("")) {
+		if(user == null) {
+			throwUserException(UserCodes.USER_NULL_CODE, 
+								UserCodes.USER_NULL_MESSAGE);
+		} else if(user.getNickname() == null || user.getNickname().equals("")) {
 			throwUserException(UserCodes.USER_EMPTY_NICKNAME_CODE, 
 								UserCodes.USER_EMPTY_NICKNAME_MESSAGE);
 		} else if(user.getEmail() == null || user.getEmail().equals("")) {
@@ -109,24 +102,43 @@ public class UserService {
 		} else if(user.getPassword() == null || user.getPassword().equals("")) {
 			throwUserException(UserCodes.USER_EMPTY_PASSWORD_CODE, 
 								UserCodes.USER_EMPTY_PASSWORD_MESSAGE);
+		} else if(!validateNickname(user.getNickname())) {
+			throwUserException(UserCodes.USER_INVALID_NICKNAME_CODE, 
+								MessageFormat.format(UserCodes.USER_INVALID_NICKNAME_MESSAGE,
+														UserConstants.USER_NICKNAME_MIN_LENGTH,
+														UserConstants.USER_NICKNAME_MAX_LENGTH));
 		} else if(!validateEmail(user.getEmail())) {
 			throwUserException(UserCodes.USER_INVALID_EMAIL_CODE, 
 								UserCodes.USER_INVALID_EMAIL_MESSAGE);
+		} else if(!validatePassword(user.getPassword())) {
+			throwUserException(UserCodes.USER_INVALID_PASSWORD_CODE, 
+								MessageFormat.format(UserCodes.USER_INVALID_PASSWORD_MESSAGE,
+														UserConstants.USER_PASSWORD_MIN_LENGTH));
 		} else if(!isNicknameAvailable(user)) {
 			throwUserException(UserCodes.USER_NICKNAME_ALREADY_EXISTS_CODE, 
 								UserCodes.USER_NICKNAME_ALREADY_EXISTS_MESSAGE);
 		} else if (!isEmailAvailable(user)) {
 			throwUserException(UserCodes.USER_EMAIL_ALREADY_EXISTS_CODE, 
 								UserCodes.USER_EMAIL_ALREADY_EXISTS_MESSAGE);
-		} else {
-			Set<ConstraintViolation<User>> violations = validator.validate(user);
-			if(violations != null && !violations.isEmpty()) {
-				throwUserException(UserCodes.USER_VALIDATION_ERROR_CODE,
-									UserCodes.USER_VALIDATION_ERROR_MESSAGE
-									+ ": " + getValidationMessages(violations));
-			}
-		}
+		} 
 		return true;
+	}
+	
+	private boolean validateNickname(String nickname) {
+		boolean validNickname = true;
+		if(nickname.length() < UserConstants.USER_NICKNAME_MIN_LENGTH 
+				|| nickname.length() > UserConstants.USER_NICKNAME_MAX_LENGTH) {
+			validNickname = false;
+		}
+		return validNickname;
+	}
+	
+	private boolean validatePassword(String password) {
+		boolean validPassword = true;
+		if(password.length() < UserConstants.USER_PASSWORD_MIN_LENGTH) {
+			validPassword = false;
+		}
+		return validPassword;
 	}
 	
 	private boolean validateEmail(String email) {
@@ -165,14 +177,4 @@ public class UserService {
 		exception.initCause(cause);
 		throw exception;
 	}
-	
-	private String getValidationMessages(Set<ConstraintViolation<User>> violations) {
-		StringBuilder builder = new StringBuilder();
-		for(ConstraintViolation<User> violation : violations) {
-    		builder.append(violation.getMessage());
-    		builder.append("; ");
-    	}
-		return new String(builder);
-	}
-
 }

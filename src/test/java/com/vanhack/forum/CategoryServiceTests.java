@@ -119,7 +119,7 @@ public class CategoryServiceTests {
 	}
 	
 	private void testInvalidAttributes(CategoryTestType testType) {
-		Category testCategory = getTestCategory();
+		Category testCategory = TestObjects.getTestCategory();
 		Category newCategory = null;
 		int exceptionCode = 0;
     	
@@ -161,8 +161,4 @@ public class CategoryServiceTests {
     	}
 
 	}
-	
-	private Category getTestCategory() {
-    	return new Category("testing");
-    }
 }

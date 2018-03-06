@@ -2,6 +2,7 @@ package com.vanhack.forum;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import com.vanhack.forum.dto.User;
 import com.vanhack.forum.exception.ForumException;
 import com.vanhack.forum.exception.UserException;
 import com.vanhack.forum.service.UserService;
+import com.vanhack.forum.util.ForumConstants.UserConstants;
+import com.vanhack.forum.util.UserCodes;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { VapForumApplication.class, TestingRepository.class })
@@ -58,7 +61,10 @@ public class UserServiceTests {
 		thirdUser.setEmail("another@vanhack.com");
 		thirdUser.setPassword("anotheruser");
 		
-		User testUser = getTestUser();
+		User testUser = TestObjects.getTestUser();
+		
+		User savedUser = TestObjects.getTestUser();
+		savedUser.setId(1L);
 		
 		User updatedUser = new User();
 		updatedUser.setId(1L);
@@ -76,7 +82,7 @@ public class UserServiceTests {
 		Mockito.when(userDao.findAll())
 			.thenReturn(allUsers);
 		Mockito.when(userDao.save(testUser))
-			.thenReturn(firstUser);
+			.thenReturn(savedUser);
 		Mockito.when(userDao.save(updatedUser))
 			.thenReturn(updatedUser);
 		Mockito.when(userDao.findById(1L))
@@ -163,8 +169,13 @@ public class UserServiceTests {
 	}
 	
 	@Test
+	public void whenUserIsNull_thenError() {
+		testInvalidAttributes(UserTestType.NULL_USER);
+	}
+	
+	@Test
 	public void whenUserIsUpdated_thenChangesAreSaved() throws ForumException {
-		User testUser = getTestUser();
+		User testUser = TestObjects.getTestUser();
 		User savedUser = userService.addUser(testUser);
 		
 		assertThat(savedUser).isNotNull();
@@ -185,7 +196,7 @@ public class UserServiceTests {
 	
 	@Test
 	public void whenUserIsDeleted_thenUserIsRemovedFromDB() throws ForumException {
-		User testUser = getTestUser();
+		User testUser = TestObjects.getTestUser();
 		User savedUser = userService.addUser(testUser);
 		long savedUserId = savedUser.getId();
 		
@@ -199,38 +210,56 @@ public class UserServiceTests {
 	}
 	
 	private void testInvalidAttributes(UserTestType testType) {	
-		User testUser = getTestUser();
+		User testUser = TestObjects.getTestUser();
 		User newUser = null;
 		int exceptionCode = 0;
+		String exceptionMessage = "";
 		
 		switch(testType) {
 			case EMPTY_NICKNAME:
 				testUser.setNickname("");
-				exceptionCode = 106;
+				exceptionCode = UserCodes.USER_EMPTY_NICKNAME_CODE;
+				exceptionMessage = UserCodes.USER_EMPTY_NICKNAME_MESSAGE;
 				break;
 			case EMPTY_EMAIL:
 				testUser.setEmail("");
-				exceptionCode = 107;
+				exceptionCode = UserCodes.USER_EMPTY_EMAIL_CODE;
+				exceptionMessage = UserCodes.USER_EMPTY_EMAIL_MESSAGE;
 				break;
 			case EMPTY_PASSWORD:
 				testUser.setPassword("");
-				exceptionCode = 108;
+				exceptionCode = UserCodes.USER_EMPTY_PASSWORD_CODE;
+				exceptionMessage = UserCodes.USER_EMPTY_PASSWORD_MESSAGE;
 				break;
 			case SHORTER_NICKNAME:
 				testUser.setNickname("test");
-				exceptionCode = 112;
+				exceptionCode = UserCodes.USER_INVALID_NICKNAME_CODE;
+				exceptionMessage = MessageFormat.format(UserCodes.USER_INVALID_NICKNAME_MESSAGE,
+															UserConstants.USER_NICKNAME_MIN_LENGTH,
+															UserConstants.USER_NICKNAME_MAX_LENGTH);
 				break;
 			case SHORTER_PASSWORD:
 				testUser.setPassword("123");
-				exceptionCode = 112;
+				exceptionCode = UserCodes.USER_INVALID_PASSWORD_CODE;
+				exceptionMessage = MessageFormat.format(UserCodes.USER_INVALID_PASSWORD_MESSAGE,
+															UserConstants.USER_PASSWORD_MIN_LENGTH);
 				break;
 			case LONGER_NICKNAME:
 				testUser.setNickname("test_test_test_test_test");
-				exceptionCode = 112;
+				exceptionCode = UserCodes.USER_INVALID_NICKNAME_CODE;
+				exceptionMessage = MessageFormat.format(UserCodes.USER_INVALID_NICKNAME_MESSAGE,
+															UserConstants.USER_NICKNAME_MIN_LENGTH,
+															UserConstants.USER_NICKNAME_MAX_LENGTH);
 				break;
 			case INVALID_EMAIL:
 				testUser.setEmail("test.test.com");
-				exceptionCode = 104;
+				exceptionCode = UserCodes.USER_INVALID_EMAIL_CODE;
+				exceptionMessage = UserCodes.USER_INVALID_EMAIL_MESSAGE;
+				break;
+			case NULL_USER:
+				testUser = null;
+				exceptionCode = UserCodes.USER_NULL_CODE;
+				exceptionMessage = UserCodes.USER_NULL_MESSAGE;
 				break;
 			default:
 				break;
@@ -241,6 +270,7 @@ public class UserServiceTests {
 		} catch(ForumException thrown) {
 			assertThat(thrown).isInstanceOf(UserException.class);
 			assertThat(thrown.getCode()).isEqualTo(exceptionCode);
+			assertThat(thrown.getMessage()).isEqualTo(exceptionMessage);
 			assertThat(newUser).isNull();
 		}
 		
@@ -251,13 +281,5 @@ public class UserServiceTests {
 			assertThat(newUser.getEmail()).isEqualTo(testUser.getEmail());
 		}
 		
-	}
-	
-	private User getTestUser() {
-		User testUser = new User();
-		testUser.setNickname("test_one");
-		testUser.setEmail("test@vanhack.com");
-		testUser.setPassword("testuser");
-		return testUser;
 	}
 }

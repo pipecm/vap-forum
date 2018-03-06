@@ -1,4 +1,4 @@
- package com.vanhack.forum.dto;
+package com.vanhack.forum.dto;
 
 import java.io.Serializable;
 
@@ -7,13 +7,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
 import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Transient;
 
+import com.vanhack.forum.util.ForumConstants.UserConstants;
+
 @Entity
-@Table(name = "vap_forum_user")
+@Table(name = UserConstants.USER_TABLE_NAME)
 public class User implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -22,16 +24,14 @@ public class User implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	@Length(min = 5, max = 20, message = "*Your nickname must have between 5 and 20 characters")
-	@NotEmpty(message = "Please provide a nickname")
+	@NotNull
 	private String nickname;
 	
-	@Email(message = "Please provide a valid Email")
-	@NotEmpty(message = "Please provide an email")
+	@Email
+	@NotNull
 	private String email;
 	
-	@Length(min = 5, message = "Your password must have at least 5 characters")
-	@NotEmpty(message = "Please provide a password")
+	@NotNull
 	@Transient
 	private String password;
 
