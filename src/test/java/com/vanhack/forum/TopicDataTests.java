@@ -3,8 +3,11 @@ package com.vanhack.forum;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,8 @@ public class TopicDataTests {
 	
 	@Autowired
 	private TopicDAO topicDao;
+	
+	private static final Logger log = LogManager.getLogger(TopicDataTests.class);
 	
 	@Test
 	public void whenTableIsEmpty_noTopicsFound() {
@@ -77,11 +82,57 @@ public class TopicDataTests {
 	
 	@Test
 	public void whenTopicIsUpdated_itMustBeRecordedInDB() {
+		User owner = TestObjects.getTestUser();
+		Category category = TestObjects.getTestCategory();
+		Topic testTopic = TestObjects.getTestTopic();
+			
+		String title = "My Topic";
+		testTopic.setTitle(title);
+		testTopic.setCreatedBy(owner);
+		testTopic.setCategory(category);
 		
+		Topic savedTopic = topicDao.save(testTopic);
+		log.debug(savedTopic);
+	
+		assertThat(savedTopic.getId()).isNotNull();
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("title", title);
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("createdBy", owner);
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("category", category);
+		
+		title = "Updated Topic";
+		Date now = new Date();
+		savedTopic.setTitle(title);
+		savedTopic.setLastUpdate(now);
+		
+		Topic updatedTopic = topicDao.save(savedTopic);
+		
+		assertThat(updatedTopic.getId()).isEqualTo(savedTopic.getId());
+		assertThat(updatedTopic).hasFieldOrPropertyWithValue("title", title);
+		assertThat(updatedTopic).hasFieldOrPropertyWithValue("lastUpdate", now);
 	}
 	
 	@Test
 	public void whenTopicIsDeleted_itMustBeDeletedFromDB() {
+		User owner = TestObjects.getTestUser();
+		Category category = TestObjects.getTestCategory();
+		Topic testTopic = TestObjects.getTestTopic();
+			
+		String title = "My Topic";
+		testTopic.setTitle(title);
+		testTopic.setCreatedBy(owner);
+		testTopic.setCategory(category);
+		
+		Topic savedTopic = topicDao.save(testTopic);
+		log.debug(savedTopic);
+	
+		assertThat(savedTopic.getId()).isNotNull();
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("title", title);
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("createdBy", owner);
+		assertThat(savedTopic).hasFieldOrPropertyWithValue("category", category);
+		
+		Long deletedId = savedTopic.getId();
+		topicDao.delete(deletedId);
+		assertThat(topicDao.findById(deletedId)).isNull();
 		
 	}
 

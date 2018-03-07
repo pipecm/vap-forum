@@ -45,7 +45,7 @@ public class Topic {
         cascade = CascadeType.REMOVE, 
         orphanRemoval = true
     )
-	private List<Post> posts = new ArrayList<>();
+	private List<Post> posts = new ArrayList<Post>();
 
 	public Topic() {
 		super();

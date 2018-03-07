@@ -11,6 +11,8 @@ import com.vanhack.forum.dto.User;
 @Repository
 public interface TopicDAO extends JpaRepository<Topic, Long> {
 	
+	public Topic findById(Long id);
+	
 	public List<Topic> findByTitleContaining(String title);
 	
 	public List<Topic> findByCategory(Category category);
